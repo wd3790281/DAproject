@@ -1,4 +1,4 @@
-package au.edu.uniemlb.dingw.game;
+package au.edu.unimelb.dingw.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
