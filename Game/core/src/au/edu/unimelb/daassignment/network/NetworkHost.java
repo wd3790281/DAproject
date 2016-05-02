@@ -56,11 +56,33 @@ public class NetworkHost implements Runnable {
                 }
                 receivedMessages[i] = msg;
             }
+            int minDelayIndex = 0;
+            long minDelay = receivedMessages[0].lastReceiveTime
+                    - sentMessages[0].sentTime
+                    + localMessageReceiveTimes[0]
+                    - receivedMessages[0].sentTime;
 
-            for (int i = 0; i < 8; i++) {
-                System.out.print(sentMessages[i] + "\t");
-                System.out.println(receivedMessages[i]);
+            for (int i = 1; i < 8; i++) {
+                long delay = receivedMessages[i].lastReceiveTime
+                        - sentMessages[i].sentTime
+                        + localMessageReceiveTimes[i]
+                        - receivedMessages[i].sentTime;
+                if(delay < minDelay) {
+                    minDelay = delay;
+                    minDelayIndex = i;
+                }
             }
+            long d = receivedMessages[minDelayIndex].lastReceiveTime
+                    - sentMessages[minDelayIndex].sentTime
+                    + localMessageReceiveTimes[minDelayIndex]
+                    - receivedMessages[minDelayIndex].sentTime;
+            long oi =  receivedMessages[minDelayIndex].lastReceiveTime
+                    - sentMessages[minDelayIndex].sentTime
+                    - localMessageReceiveTimes[minDelayIndex]
+                    + receivedMessages[minDelayIndex].sentTime;
+            long o1 = oi - d/2;
+            long o2 = oi + d/2;
+            System.out.println(o1 + " " + o2);
 
         } catch (IOException e) {
             e.printStackTrace();
