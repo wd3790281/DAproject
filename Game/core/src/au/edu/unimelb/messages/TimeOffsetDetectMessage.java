@@ -10,14 +10,11 @@ public class TimeOffsetDetectMessage extends Message {
         this.messageType = MessageType.TimeOffsetDetect;
     }
 
-    public double lastMessageSentTime;
-    public double lastMessageReceiveTime;
-    public double sentTime;
+    public long sentTime = -1;
+    public long lastReceiveTime = -1;
 
-    public static void main(String[] args) {
-        Gson gson = new Gson();
-        String json = gson.toJson(new TimeOffsetDetectMessage());
-        TimeOffsetDetectMessage msg2 = gson.fromJson(json, TimeOffsetDetectMessage.class);
-        System.out.println(msg2.messageType);
+    @Override
+    public String toString() {
+        return "s: " + sentTime + " lr: " + lastReceiveTime;
     }
 }

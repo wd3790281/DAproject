@@ -1,5 +1,7 @@
 package au.edu.unimelb.messages;
 
+import com.google.gson.Gson;
+
 /**
  * Created by HeguangMiao on 1/05/2016.
  */
