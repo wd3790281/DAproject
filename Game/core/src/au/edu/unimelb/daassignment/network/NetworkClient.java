@@ -1,6 +1,5 @@
 package au.edu.unimelb.daassignment.network;
 
-import au.edu.unimelb.messages.LatencyDetectMessage;
 import au.edu.unimelb.messages.Message;
 import au.edu.unimelb.messages.TimeOffsetDetectMessage;
 import com.google.gson.Gson;
@@ -11,8 +10,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by HeguangMiao on 1/05/2016.
@@ -30,22 +27,15 @@ public class NetworkClient implements Runnable{
     /**
      * All timestamps will be modified before delivering to upper layers
      */
-    private long timeOffsetToHost = 0;
+    private long timeOffsetToHost = Long.MAX_VALUE;
 
     private class MessageHandler {
         public void handleMessage(String messageString) {
             Message msg = gson.fromJson(messageString, Message.class);
             switch (msg.messageType) {
-                case LatencyDetect:
-                    LatencyDetectMessage latencyMessage = gson.fromJson(messageString, LatencyDetectMessage.class);
-                    handleLatencyDetectMessage(latencyMessage);
-                    break;
             }
         }
 
-        public void handleLatencyDetectMessage(LatencyDetectMessage message) {
-
-        }
     }
 
     public NetworkClient(String ipAddress, int port) {
@@ -76,8 +66,11 @@ public class NetworkClient implements Runnable{
                 msgToSend.sentTime = new Date().getTime();
                 out.println(gson.toJson(msgToSend));
             }
-            long offsetResult = Long.parseLong(reader.readLine());
-            System.out.println(offsetResult);
+            this.timeOffsetToHost = Long.parseLong(reader.readLine());
+            MessageHandler handler = new MessageHandler();
+            while (!Thread.interrupted()) {
+                handler.handleMessage(reader.readLine());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
