@@ -1,5 +1,6 @@
 package au.edu.unimelb.daassignment.network;
 
+import au.edu.unimelb.messages.GameStateExchangeMessage;
 import au.edu.unimelb.messages.Message;
 import au.edu.unimelb.messages.TimeOffsetDetectMessage;
 import com.google.gson.Gson;
@@ -23,20 +24,6 @@ public class NetworkClient implements Runnable{
 
     private String ipAddress;
     private int port;
-
-    /**
-     * All timestamps will be modified before delivering to upper layers
-     */
-    private long timeOffsetToHost = Long.MAX_VALUE;
-
-    private class MessageHandler {
-        public void handleMessage(String messageString) {
-            Message msg = gson.fromJson(messageString, Message.class);
-            switch (msg.messageType) {
-            }
-        }
-
-    }
 
     public NetworkClient(String ipAddress, int port) {
         this.ipAddress = ipAddress;
@@ -66,8 +53,9 @@ public class NetworkClient implements Runnable{
                 msgToSend.sentTime = new Date().getTime();
                 out.println(gson.toJson(msgToSend));
             }
-            this.timeOffsetToHost = Long.parseLong(reader.readLine());
-            MessageHandler handler = new MessageHandler();
+            // We need to reverse the sign in the client
+            long timeOffsetToHost = -Long.parseLong(reader.readLine());
+            MessageHandler handler = new MessageHandler(timeOffsetToHost);
             while (!Thread.interrupted()) {
                 handler.handleMessage(reader.readLine());
             }

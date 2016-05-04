@@ -13,7 +13,7 @@ import java.util.List;
  * Created by HeguangMiao on 3/05/2016.
  */
 public class BucketManager {
-    class Bucket {
+    private class Bucket {
         long startTime;
         long endTime = -1;
 
@@ -29,15 +29,8 @@ public class BucketManager {
             }
         }
 
-        public GameStateExchangeMessage[] getMessages() {
-            int size = messageMap.size();
-            GameStateExchangeMessage[] messages = new GameStateExchangeMessage[size];
-            int i = 0;
-            for (GameStateExchangeMessage message : messageMap.values()) {
-                messages[i] = message;
-                i++;
-            }
-            return messages;
+        public HashMap<Integer, GameStateExchangeMessage> getMessages() {
+            return messageMap;
         }
 
         // for reuse
@@ -50,19 +43,30 @@ public class BucketManager {
 
     private CircularArray<Bucket> buckets;
 
+    public static final BucketManager defaultManager = new BucketManager(3);
+
 
     public BucketManager(int bufferSize) {
         buckets = new CircularArray<Bucket>(bufferSize);
     }
 
-    public GameStateExchangeMessage[] getMessages() {
+    public HashMap<Integer, GameStateExchangeMessage> getMessages() {
+        long timeStamp = new Date().getTime();
+        if(buckets.size() < buckets.getCapacity()) {
+            // create new bucket
+            Bucket newBucket = new Bucket();
+            newBucket.startTime = timeStamp;
+            buckets.add(newBucket);
+            return null;
+        }
         Bucket b = buckets.getOldest();
         if (b == null) {
             return null;
         }
-        GameStateExchangeMessage[] messages = b.getMessages();
+        // return a copy
+        HashMap<Integer, GameStateExchangeMessage> messages = new HashMap<Integer, GameStateExchangeMessage>(b.getMessages());
         Bucket latestBucket = buckets.getNewest();
-        long timeStamp = new Date().getTime();
+
         // The start time of new bucket is the end time of last bucket
         if (latestBucket != null) {
             latestBucket.endTime = timeStamp;
@@ -76,9 +80,27 @@ public class BucketManager {
 
     public void receiveMessage(GameStateExchangeMessage message, int sourceId) {
         Object[] allBuckets = buckets.allElements();
-        for (Object obj : allBuckets) {
-            Bucket b = (Bucket)obj;
+        for (int i = 0; i< buckets.size(); i++) {
+            Bucket b = (Bucket)allBuckets[i];
             b.put(message, sourceId);
         }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        BucketManager man = new BucketManager(3);
+        man.getMessages();
+        long timeStamp = new Date().getTime();
+        GameStateExchangeMessage msg = new GameStateExchangeMessage();
+        msg.timeStamp = timeStamp;
+        man.receiveMessage(msg,1);
+        Thread.sleep(10);
+        HashMap<Integer, GameStateExchangeMessage> messages = man.getMessages();
+        assert messages == null;
+        Thread.sleep(10);
+        messages = man.getMessages();
+        Thread.sleep(10);
+        messages = man.getMessages();
+        assert messages.get(1) != null;
+
     }
 }
