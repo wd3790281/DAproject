@@ -21,6 +21,7 @@ public class NetworkHost implements Runnable {
     private PrintWriter out;
     private BufferedReader reader;
     private Gson gson = new Gson();
+    private long timeOffsetToClient = Long.MAX_VALUE;
 
     public NetworkHost(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
@@ -80,10 +81,9 @@ public class NetworkHost implements Runnable {
                     - sentMessages[minDelayIndex].sentTime
                     - localMessageReceiveTimes[minDelayIndex]
                     + receivedMessages[minDelayIndex].sentTime;
-            long o1 = oi - d/2;
-            long o2 = oi + d/2;
-            System.out.println(o1 + " " + o2);
-
+            this.timeOffsetToClient = ((oi - d/2) + (oi + d/2)) / 2;
+            // here we tell the client the result
+            out.println(timeOffsetToClient);
         } catch (IOException e) {
             e.printStackTrace();
         }
