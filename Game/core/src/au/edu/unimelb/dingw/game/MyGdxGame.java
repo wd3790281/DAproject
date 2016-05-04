@@ -7,11 +7,9 @@ import java.util.Iterator;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
@@ -25,7 +23,7 @@ public class MyGdxGame extends ApplicationAdapter {
 //    private Music rainMusic;
     private SpriteBatch batch;
     private OrthographicCamera camera;
-    private Rectangle tank;
+    private Tank tank;
 //    private Sprite tank;
     private Array<Bullet> bullets;
     private long lastDropTime;
@@ -47,21 +45,12 @@ public class MyGdxGame extends ApplicationAdapter {
 ////        rainMusic.setLooping(true);
 //        rainMusic.play();
 
-        // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1024, 768);
         batch = new SpriteBatch();
 
-        float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
         // create a Rectangle to logically represent the tank
-        tank = new Rectangle();
-//        tank = new Sprite(tankImage);
-//        tank.setPosition(w/2 - tank.getWidth()/2, h/2 - tank.getHeight()/2);
-        tank.x = 1024 / 2 - 40 / 2; // center the tank horizontally
-        tank.y = 20; // bottom left corner of the tank is 20 pixels above the bottom screen edge
-        tank.width = 40;
-        tank.height = 40;
+        tank = new Tank(tankImage, mDirection, 492, 20);
 
         bullets = new Array<Bullet>();
 
@@ -103,12 +92,9 @@ public class MyGdxGame extends ApplicationAdapter {
         // coordinate system specified by the camera.
         batch.setProjectionMatrix(camera.combined);
 
-        // begin a new batch and draw the tank and
-        // all drops
         batch.begin();
-        batch.draw(tankImage, tank.x, tank.y);
+        batch.draw(tank.getTankImage(), tank.getTank().getX(), tank.getTank().getY());
 
-//        tank.draw(batch);
         for (Bullet bullet : bullets) {
             batch.draw(bullet.getBulletImage(), bullet.getBullet().x, bullet.getBullet().y);
         }
@@ -117,84 +103,50 @@ public class MyGdxGame extends ApplicationAdapter {
         }
         batch.end();
 
-        // process user input
-//        if (Gdx.input.isTouched()) {
-//            Vector3 touchPos = new Vector3();
-//            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-//            camera.unproject(touchPos);
-//            tank.x = touchPos.x - 64 / 2;
-//        }
         if (Gdx.input.isKeyPressed(Keys.LEFT)) {
 
             if (Gdx.input.isKeyPressed(Keys.UP)){
-                move(5);
-                System.out.println(5);
+                tank.move(5);
             }else if (Gdx.input.isKeyPressed(Keys.DOWN)){
-                move(7);
-                System.out.println(7);
+                tank.move(7);
             }else {
-                move(1);
-                System.out.println(1);
+                tank.move(1);
             }
-//            move(1);
         }
         if (Gdx.input.isKeyPressed(Keys.RIGHT)) {
             if (Gdx.input.isKeyPressed(Keys.UP)){
-                move(6);
+                tank.move(6);
             }else if (Gdx.input.isKeyPressed(Keys.DOWN)){
-                move(8);
+                tank.move(8);
             }else {
-                move(2);
+                tank.move(2);
             }
-//            move(2);
         }
         if (Gdx.input.isKeyPressed(Keys.UP)){
             if (Gdx.input.isKeyPressed(Keys.LEFT)){
-                move(5);
-                System.out.println(5);
+                tank.move(5);
             }else if (Gdx.input.isKeyPressed(Keys.RIGHT)){
-                move(6);
-                System.out.println(6);
+                tank.move(6);
             }else {
-                move(3);
-                System.out.println(3);
+                tank.move(3);
             }
 
         }
         if (Gdx.input.isKeyPressed(Keys.DOWN)) {
             if (Gdx.input.isKeyPressed(Keys.LEFT)){
-                move(7);
-                System.out.println(7);
+                tank.move(7);
             }else if (Gdx.input.isKeyPressed(Keys.RIGHT)){
-                move(8);
-                System.out.println(8);
+                tank.move(8);
             }else {
-                move(4);
-                System.out.println(4);
+                tank.move(4);
             }
         }
-//        if (Gdx.input.isKeyPressed(Keys.LEFT) && Gdx.input.isKeyPressed(Keys.UP)) move(5);
-//        if (Gdx.input.isKeyPressed(Keys.RIGHT) && Gdx.input.isKeyPressed(Keys.UP)) move(6);
-//        if (Gdx.input.isKeyPressed(Keys.LEFT) && Gdx.input.isKeyPressed(Keys.DOWN)) move(7);
-//        if (Gdx.input.isKeyPressed(Keys.RIGHT) && Gdx.input.isKeyPressed(Keys.DOWN)) move(8);
         if (Gdx.input.isKeyJustPressed(Keys.SPACE)) fire();
 
         // make sure the tank stays within the screen bounds
-        if (tank.x < 0) tank.x = 0;
-        if (tank.x > 1024 - 40) tank.x = 1024 - 40;
-        if (tank.y < 0) tank.y = 0;
-        if (tank.y > 768 - 40) tank.y = 768 - 40;
-//        if (tank.getX() < 0) tank.setX(0);
-//        if (tank.getX() > 1024 - tank.getWidth()) tank.setX(1024 - tank.getWidth());
-//        if (tank.getY() < 0) tank.setY(0);
-//        if (tank.getY() > 768 - tank.getHeight()) tank.setX(768 - tank.getHeight());
+        tank.inBound();
 
-        // check if we need to create a new raindrop
-//        if (TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
 
-        // move the raindrops, remove any that are beneath the bottom edge of
-        // the screen or that hit the tank. In the later case we play back
-        // a sound effect as well.
         Iterator<Bullet> iter = bullets.iterator();
         Iterator<Rectangle> iter2 = walls.iterator();
         while (iter.hasNext()) {
@@ -211,149 +163,15 @@ public class MyGdxGame extends ApplicationAdapter {
         }
         while (iter2.hasNext()){
             Rectangle wall = iter2.next();
-            if (wall.overlaps(tank)) {
-                restrictTank(wall);
+            if (wall.overlaps(tank.getTank())) {
+                tank.restrictTank(wall);
             }
-        }
-    }
-
-    public void restrictTank(Rectangle wall) {
-
-//        final float nowX = tank.x;
-//        final float nowY = tank.y;
-        switch (mDirection) {
-            case 1:
-//                tank.x = wall.x + 22;
-                tank.setX(wall.x + wall.getWidth());
-                break;
-            case 2:
-//                tank.x = wall.x - 40;
-                tank.setX(wall.x - tank.getWidth());
-                break;
-            case 3:
-//                tank.y = wall.y - 40;
-                tank.setY(wall.y - tank.getHeight());
-                break;
-            case 4:
-//                tank.y = wall.y + 21;
-                tank.setY(wall.y + wall.getHeight());
-                break;
-
-            case 5:
-//                tank.x = wall.x + 22;
-//                tank.y = wall.y - 43;
-                tank.setX(wall.x + wall.getWidth());
-                tank.setY(wall.y - tank.getHeight());
-//                tank.x = nowX;
-//                tank.y = nowY;
-                break;
-            case 6:
-//                tank.x = wall.x - 43;
-//                tank.y = wall.y - 43;
-                tank.setX(wall.x + tank.getWidth());
-                tank.setY(wall.y - tank.getHeight());
-//                tank.x = nowX;
-//                tank.y = nowY;
-                break;
-            case 7:
-//                tank.x = wall.x + 22;
-//                tank.y = wall.y + 21;
-                tank.setX(wall.x + wall.getWidth());
-                tank.setY(wall.y - wall.getHeight());
-//                tank.x = nowX;
-//                tank.y = nowY;
-                break;
-            case 8:
-//                tank.x = wall.x - 43;
-//                tank.y = wall.y + 21;
-                tank.setX(wall.x + tank.getWidth());
-                tank.setY(wall.y - wall.getHeight());
-//                tank.x = nowX;
-//                tank.y = nowY;
-                break;
-            default:
-                break;
-        }
-    }
-
-    public void move(int direction) {
-        switch (direction) {
-            case 1:
-                mDirection = 1;
-                tankImage = new Texture(Gdx.files.internal("tankL.gif"));
-//                tank.setTexture(tankImage);
-                System.out.println(mDirection);
-                tank.x -= 100 * Gdx.graphics.getDeltaTime();
-//                tank.translateX(-200*Gdx.graphics.getDeltaTime());
-                break;
-            case 2:
-                mDirection = 2;
-                tankImage = new Texture(Gdx.files.internal("tankR.gif"));
-//                tank.setTexture(tankImage);
-                tank.x += 100 * Gdx.graphics.getDeltaTime();
-                System.out.println(mDirection);
-//                tank.translateX(200*Gdx.graphics.getDeltaTime());
-                break;
-            case 3:
-                mDirection = 3;
-                tankImage = new Texture(Gdx.files.internal("tankU.gif"));
-//                tank.setTexture(tankImage);
-                tank.y += 100 * Gdx.graphics.getDeltaTime();
-                System.out.println(mDirection);
-//                tank.translateY(200*Gdx.graphics.getDeltaTime());
-                break;
-            case 4:
-                mDirection = 4;
-                tankImage = new Texture(Gdx.files.internal("tankD.gif"));
-//                tank.setTexture(tankImage);
-                tank.y -= 100 * Gdx.graphics.getDeltaTime();
-                System.out.println(mDirection);
-//                tank.translateY(-200*Gdx.graphics.getDeltaTime());
-                break;
-            case 5:
-                mDirection = 5;
-                tankImage = new Texture(Gdx.files.internal("tankLU.gif"));
-//                tank.setTexture(tankImage);
-                System.out.println(mDirection);
-                tank.y += 35 * Gdx.graphics.getDeltaTime();
-                tank.x -= 35 * Gdx.graphics.getDeltaTime();
-//                tank.translate(-141*Gdx.graphics.getDeltaTime(),141*Gdx.graphics.getDeltaTime());
-                break;
-            case 6:
-                mDirection = 6;
-                tankImage = new Texture(Gdx.files.internal("tankRU.gif"));
-//                tank.setTexture(tankImage);
-                tank.y += 35 * Gdx.graphics.getDeltaTime();
-                tank.x += 35 * Gdx.graphics.getDeltaTime();
-                System.out.println(mDirection);
-//                tank.translate(141*Gdx.graphics.getDeltaTime(),141*Gdx.graphics.getDeltaTime());
-                break;
-            case 7:
-                mDirection = 7;
-                tankImage = new Texture(Gdx.files.internal("tankLD.gif"));
-//                tank.setTexture(tankImage);
-                tank.y -= 35 * Gdx.graphics.getDeltaTime();
-                tank.x -= 35 * Gdx.graphics.getDeltaTime();
-                System.out.println(mDirection);
-//                tank.translate(-141*Gdx.graphics.getDeltaTime(),-141*Gdx.graphics.getDeltaTime());
-                break;
-            case 8:
-                mDirection = 8;
-                tankImage = new Texture(Gdx.files.internal("tankRD.gif"));
-//                tank.setTexture(tankImage);
-                tank.y -= 35 * Gdx.graphics.getDeltaTime();
-                tank.x += 35 * Gdx.graphics.getDeltaTime();
-                System.out.println(mDirection);
-//                tank.translate(141*Gdx.graphics.getDeltaTime(),-141*Gdx.graphics.getDeltaTime());
-                break;
-            default:
-                break;
         }
     }
 
     public void fire() {
 
-        switch (mDirection) {
+        switch (tank.getDirection()) {
             case 1:
                 bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
                 break;
@@ -379,7 +197,7 @@ public class MyGdxGame extends ApplicationAdapter {
                 bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
         }
 
-        Bullet bullet = new Bullet(bulletImage, mDirection, tank.getX(), tank.getY());
+        Bullet bullet = new Bullet(bulletImage, tank.getDirection(), tank.getTank().getX(), tank.getTank().getY());
         bullets.add(bullet);
     }
 
@@ -391,4 +209,5 @@ public class MyGdxGame extends ApplicationAdapter {
         tankImage.dispose();
         batch.dispose();
     }
+
 }

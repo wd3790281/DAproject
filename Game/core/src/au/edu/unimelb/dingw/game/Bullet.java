@@ -3,8 +3,6 @@ package au.edu.unimelb.dingw.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.BooleanArray;
-import com.badlogic.gdx.utils.TimeUtils;
 
 /**
  * Created by dingwang on 16/4/28.
