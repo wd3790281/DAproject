@@ -39,7 +39,7 @@ public class CircularArray<T> {
 
     public void add(T obj) {
         int pt = (tail + 1) % capacity;
-        if(pt == head) {
+        if(pt == head && tail != -1) {
             // full, remove oldest one
             head = (head + 1) % capacity;
         }
@@ -57,5 +57,13 @@ public class CircularArray<T> {
             cp[i] = get(i);
         }
         return cp;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public int getCapacity() {
+        return capacity;
     }
 }
