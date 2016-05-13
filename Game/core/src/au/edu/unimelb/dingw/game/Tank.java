@@ -11,6 +11,7 @@ public class Tank {
     private Texture tankImage;
     private int direction;
     private Rectangle tank;
+    private boolean moveable = true;
 
     public Tank(Texture tankImage, int direction,float x, float y){
         this.direction = direction;
@@ -52,86 +53,90 @@ public class Tank {
     }
 
     public void move(int direction) {
-        switch (direction) {
+//        if (this.moveable) {
+            switch (direction) {
+                case 1:
+                    this.direction = 1;
+                    tankImage = new Texture(Gdx.files.internal("tankL.gif"));
+                    tank.x -= 100 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 2:
+                    this.direction = 2;
+                    tankImage = new Texture(Gdx.files.internal("tankR.gif"));
+                    tank.x += 100 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 3:
+                    this.direction = 3;
+                    tankImage = new Texture(Gdx.files.internal("tankU.gif"));
+                    tank.y += 100 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 4:
+                    this.direction = 4;
+                    tankImage = new Texture(Gdx.files.internal("tankD.gif"));
+                    tank.y -= 100 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 5:
+                    this.direction = 5;
+                    tankImage = new Texture(Gdx.files.internal("tankLU.gif"));
+                    tank.y += 35 * Gdx.graphics.getDeltaTime();
+                    tank.x -= 35 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 6:
+                    this.direction = 6;
+                    tankImage = new Texture(Gdx.files.internal("tankRU.gif"));
+                    tank.y += 35 * Gdx.graphics.getDeltaTime();
+                    tank.x += 35 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 7:
+                    this.direction = 7;
+                    tankImage = new Texture(Gdx.files.internal("tankLD.gif"));
+                    tank.y -= 35 * Gdx.graphics.getDeltaTime();
+                    tank.x -= 35 * Gdx.graphics.getDeltaTime();
+                    break;
+                case 8:
+                    this.direction = 8;
+                    tankImage = new Texture(Gdx.files.internal("tankRD.gif"));
+                    tank.y -= 35 * Gdx.graphics.getDeltaTime();
+                    tank.x += 35 * Gdx.graphics.getDeltaTime();
+                    break;
+                default:
+                    break;
+            }
+//        } else {
+//            tank.x += 0 * Gdx.graphics.getDeltaTime();
+//            tank.y += 0 * Gdx.graphics.getDeltaTime();
+//        }
+    }
+    public void restrictTank() {
+
+        switch (this.direction) {
             case 1:
-                this.direction = 1;
-                tankImage = new Texture(Gdx.files.internal("tankL.gif"));
-                tank.x -= 100 * Gdx.graphics.getDeltaTime();
-                break;
-            case 2:
-                this.direction = 2;
-                tankImage = new Texture(Gdx.files.internal("tankR.gif"));
                 tank.x += 100 * Gdx.graphics.getDeltaTime();
                 break;
-            case 3:
-                this.direction = 3;
-                tankImage = new Texture(Gdx.files.internal("tankU.gif"));
-                tank.y += 100 * Gdx.graphics.getDeltaTime();
+            case 2:
+                tank.x -= 100 * Gdx.graphics.getDeltaTime();
                 break;
-            case 4:
-                this.direction = 4;
-                tankImage = new Texture(Gdx.files.internal("tankD.gif"));
+            case 3:
                 tank.y -= 100 * Gdx.graphics.getDeltaTime();
                 break;
-            case 5:
-                this.direction = 5;
-                tankImage = new Texture(Gdx.files.internal("tankLU.gif"));
-                tank.y += 35 * Gdx.graphics.getDeltaTime();
-                tank.x -= 35 * Gdx.graphics.getDeltaTime();
-                break;
-            case 6:
-                this.direction = 6;
-                tankImage = new Texture(Gdx.files.internal("tankRU.gif"));
-                tank.y += 35 * Gdx.graphics.getDeltaTime();
-                tank.x += 35 * Gdx.graphics.getDeltaTime();
-                break;
-            case 7:
-                this.direction = 7;
-                tankImage = new Texture(Gdx.files.internal("tankLD.gif"));
-                tank.y -= 35 * Gdx.graphics.getDeltaTime();
-                tank.x -= 35 * Gdx.graphics.getDeltaTime();
-                break;
-            case 8:
-                this.direction = 8;
-                tankImage = new Texture(Gdx.files.internal("tankRD.gif"));
-                tank.y -= 35 * Gdx.graphics.getDeltaTime();
-                tank.x += 35 * Gdx.graphics.getDeltaTime();
-                break;
-            default:
-                break;
-        }
-    }
-    public void restrictTank(Rectangle wall) {
-
-        switch (direction) {
-            case 1:
-                tank.setX(wall.x + wall.getWidth());
-                break;
-            case 2:
-                tank.setX(wall.x - tank.getWidth());
-                break;
-            case 3:
-                tank.setY(wall.y - tank.getHeight());
-                break;
             case 4:
-                tank.setY(wall.y + wall.getHeight());
+                tank.y += 100 * Gdx.graphics.getDeltaTime();
                 break;
-
             case 5:
-                tank.setX(wall.x + wall.getWidth());
-                tank.setY(wall.y - tank.getHeight());
+                tank.y -= 35 * Gdx.graphics.getDeltaTime();
+                tank.x += 35 * Gdx.graphics.getDeltaTime();
                 break;
             case 6:
-                tank.setX(wall.x + tank.getWidth());
-                tank.setY(wall.y - tank.getHeight());
+                tank.y -= 35 * Gdx.graphics.getDeltaTime();
+                tank.x -= 35 * Gdx.graphics.getDeltaTime();
                 break;
             case 7:
-                tank.setX(wall.x + wall.getWidth());
-                tank.setY(wall.y - wall.getHeight());
+                tank.y += 35 * Gdx.graphics.getDeltaTime();
+                tank.x += 35 * Gdx.graphics.getDeltaTime();
                 break;
             case 8:
-                tank.setX(wall.x + tank.getWidth());
-                tank.setY(wall.y - wall.getHeight());
+                tank.y += 35 * Gdx.graphics.getDeltaTime();
+                tank.x -= 35 * Gdx.graphics.getDeltaTime();
                 break;
             default:
                 break;
@@ -145,7 +150,14 @@ public class Tank {
         if (tank.y > 768 - 40) tank.y = 768 - 40;
     }
 
-//    public void fire() {
+    public void setMoveable(boolean moveable) {
+        this.moveable = moveable;
+    }
+
+    public boolean isMoveable() {
+        return moveable;
+    }
+    //    public void fire() {
 //
 //        Texture bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
 //        switch (this.direction) {

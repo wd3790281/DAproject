@@ -16,6 +16,7 @@ public class Bullet {
         this.bulletImage = bulletImage;
         this.direction = direction;
         createBullet(x, y);
+
     }
 
     private void createBullet(float x, float y) {

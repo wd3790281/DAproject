@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 
 /**
  * Created by dingwang on 16/5/4.
@@ -28,11 +28,11 @@ public class GameScreen implements Screen {
 //    private Music rainMusic;
     private SpriteBatch batch;
     private OrthographicCamera camera;
-    private Tank tank;
-    //    private Sprite tank;
+    private Tank myTank;
+    private Tank enemyTank;
     private Array<Bullet> bullets;
-    private long lastDropTime;
     private Array<Rectangle> walls;
+    private Array<Integer> pressedKeys;
 
     public GameScreen(Game game){
         this.game = game;
@@ -50,27 +50,27 @@ public class GameScreen implements Screen {
 //        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
 
         // start the playback of the background music immediately
-////        rainMusic.setLooping(true);
+//        rainMusic.setLooping(true);
 //        rainMusic.play();
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1024, 768);
         batch = new SpriteBatch();
 
-        // create a Rectangle to logically represent the tank
-        tank = new Tank(tankImage, mDirection, 492, 20);
+        // create a Rectangle to logically represent the myTank
+        myTank = new Tank(tankImage, mDirection, 492, 20);
 
         bullets = new Array<Bullet>();
 
+        pressedKeys = new Array<Integer>();
+
         walls = new Array<Rectangle>();
-//        for (float x = (float) 100.0; x < 1024; x += 22) {
         for (float y = 0; y < 768; y += 21) {
             createWalls(100, y);
         }
         for (float y = 0; y < 768; y += 21) {
             createWalls(y, 100);
         }
-//        }
     }
 
     private void createWalls(float x, float y) {
@@ -95,78 +95,95 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        batch.draw(tank.getTankImage(), tank.getTank().getX(), tank.getTank().getY());
+        batch.draw(myTank.getTankImage(), myTank.getTank().getX(), myTank.getTank().getY());
 
         for (Bullet bullet : bullets) {
             batch.draw(bullet.getBulletImage(), bullet.getBullet().x, bullet.getBullet().y);
         }
+
         for (Rectangle wall: walls) {
             batch.draw(wallImage, wall.x, wall.y);
         }
         batch.end();
 
+        pressedKeys.clear();
+
+
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.UP)){
-                tank.move(5);
+                myTank.move(5);
+                pressedKeys.add(5);
             }else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                tank.move(7);
+                myTank.move(7);
+                pressedKeys.add(7);
             }else {
-                tank.move(1);
+                myTank.move(1);
+                pressedKeys.add(1);
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             if (Gdx.input.isKeyPressed(Input.Keys.UP)){
-                tank.move(6);
+                myTank.move(6);
+                pressedKeys.add(6);
             }else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                tank.move(8);
+                myTank.move(8);
+                pressedKeys.add(8);
             }else {
-                tank.move(2);
+                myTank.move(2);
+                pressedKeys.add(2);
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)){
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                tank.move(5);
+                myTank.move(5);
+                pressedKeys.add(5);
             }else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                tank.move(6);
+                myTank.move(6);
+                pressedKeys.add(6);
             }else {
-                tank.move(3);
+                myTank.move(3);
+                pressedKeys.add(3);
             }
 
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                tank.move(7);
+                myTank.move(7);
+                pressedKeys.add(7);
             }else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                tank.move(8);
+                myTank.move(8);
+                pressedKeys.add(8);
             }else {
-                tank.move(4);
+                myTank.move(4);
+                pressedKeys.add(4);
             }
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) fire();
 
-        // make sure the tank stays within the screen bounds
-        tank.inBound();
+        // make sure the myTank stays within the screen bounds
+        myTank.inBound();
 
 
-        Iterator<Bullet> iter = bullets.iterator();
-        Iterator<Rectangle> iter2 = walls.iterator();
-        while (iter.hasNext()) {
-            Bullet bullet = iter.next();
+        for (int i = 0; i < bullets.size; i ++) {
+
+            Bullet bullet = bullets.get(i);
+
             bullet.changeBulletPosition();
-            if (bullet.outOfScreen()) iter.remove();
-            while (iter2.hasNext()){
-                Rectangle wall = iter2.next();
+            if (bullet.outOfScreen()) bullets.removeIndex(i);
+            for (int j = 0; j < walls.size; j ++){
+                Rectangle wall = walls.get(j);
                 if (bullet.getBullet().overlaps(wall) || wall.overlaps(bullet.getBullet()) || wall.contains(bullet.getBullet())) {
-                    iter.remove();
-                    iter2.remove();
+                    bullets.removeIndex(i);
+                    walls.removeIndex(j);
                 }
+
             }
         }
-        while (iter2.hasNext()){
-            Rectangle wall = iter2.next();
-            if (wall.overlaps(tank.getTank()) || tank.getTank().overlaps(wall)) {
-                tank.restrictTank(wall);
+        for (int j = 0; j < walls.size; j ++){
+            Rectangle wall = walls.get(j);
+            if (wall.overlaps(myTank.getTank()) || myTank.getTank().overlaps(wall)) {
+                myTank.restrictTank();
             }
         }
 
@@ -174,7 +191,7 @@ public class GameScreen implements Screen {
 
     public void fire() {
 
-        switch (tank.getDirection()) {
+        switch (myTank.getDirection()) {
             case 1:
                 bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
                 break;
@@ -200,7 +217,7 @@ public class GameScreen implements Screen {
                 bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
         }
 
-        Bullet bullet = new Bullet(bulletImage, tank.getDirection(), tank.getTank().getX(), tank.getTank().getY());
+        Bullet bullet = new Bullet(bulletImage, myTank.getDirection(), myTank.getTank().getX(), myTank.getTank().getY());
         bullets.add(bullet);
     }
 
