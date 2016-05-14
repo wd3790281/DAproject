@@ -13,7 +13,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.google.common.eventbus.Subscribe;
 
 import java.io.IOException;
 
@@ -55,6 +57,7 @@ public class MenuScreen implements Screen{
 //        font = new BitmapFont(Gdx.files.internal("font.fnt"));
         Gdx.input.setInputProcessor(stage);
         rebuildStage();
+        Utils.bus.register(this);
 
     }
 
@@ -271,7 +274,9 @@ public class MenuScreen implements Screen{
         return winWait;
     }
 
-
-
+    @Subscribe
+    public void startGame() {
+        game.setScreen(new GameScreen(game));
+    }
 }
 

@@ -36,7 +36,6 @@ project(":desktop") {
 
     dependencies {
         compile project(":core")
-        compile "com.badlogic.gdx:gdx-tools:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
@@ -55,6 +54,7 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
         compile 'com.google.code.gson:gson:2.6.2'
+        compile 'com.google.guava:guava:19.0'
     }
 }
 
