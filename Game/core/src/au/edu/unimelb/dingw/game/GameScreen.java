@@ -262,13 +262,13 @@ public class GameScreen implements Screen {
             if (enemyMessage != null) {
 //                System.out.println(enemyMessage.extraInfo.toString());
                 if (Utils.identity.equals("host")) {
-                    System.out.println(enemyMessage.extraInfo);
+//                    System.out.println(enemyMessage.extraInfo);
                     if (enemyMessage.extraInfo.get("clientx") != null
                             && enemyMessage.extraInfo.get("clienty") != null
                             && enemyMessage.extraInfo.get("clientd") != null ) {
-                        System.out.println(enemyMessage.extraInfo.get("clientx").getAsFloat());
-                        System.out.println(enemyMessage.extraInfo.get("clienty").getAsFloat());
-                        System.out.println(enemyMessage.extraInfo.get("clientd").getAsInt());
+//                        System.out.println(enemyMessage.extraInfo.get("clientx").getAsFloat());
+//                        System.out.println(enemyMessage.extraInfo.get("clienty").getAsFloat());
+//                        System.out.println(enemyMessage.extraInfo.get("clientd").getAsInt());
                         enemyTank.updateTankState(enemyMessage.extraInfo.get("clientx").getAsFloat(),
                                 enemyMessage.extraInfo.get("clienty").getAsFloat(),
                                 enemyMessage.extraInfo.get("clientd").getAsInt());
