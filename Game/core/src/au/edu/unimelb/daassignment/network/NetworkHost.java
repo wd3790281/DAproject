@@ -90,7 +90,7 @@ public class NetworkHost implements Runnable {
             // here we tell the client the result
             out.println(timeOffsetToClient);
             out.flush();
-            System.out.println(timeOffsetToClient);
+//            System.out.println(timeOffsetToClient);
             Utils.bus.post(Utils.CONNECTED_NOTIFICATION);
             MessageHandler handler = new MessageHandler(timeOffsetToClient);
             while (!Thread.interrupted()) {
@@ -106,7 +106,7 @@ public class NetworkHost implements Runnable {
             @Override
             public void run() {
                 String json = gson.toJson(message);
-                out.println(json);
+//                out.println(json);
                 out.flush();
             }
         });

@@ -48,6 +48,7 @@ public class GameScreen implements Screen {
     private JsonArray enemyMovement;
     private JsonArray myFire;
     private JsonArray enemyFire;
+    private boolean firstLoad;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -93,6 +94,7 @@ public class GameScreen implements Screen {
         myMovement = new JsonArray();
         enemyFire = new JsonArray();
         enemyMovement = new JsonArray();
+        firstLoad = true;
 
         walls = new Array<Rectangle>();
         for (float y = 0; y < 768; y += 21) {
@@ -124,8 +126,11 @@ public class GameScreen implements Screen {
         // tell the SpriteBatch to render in the
         // coordinate system specified by the camera.
         batch.setProjectionMatrix(camera.combined);
+        if(!firstLoad) {
+            updateGameState();
+        }
 
-        updateGameState();
+        firstLoad = false;
 
         batch.begin();
 
