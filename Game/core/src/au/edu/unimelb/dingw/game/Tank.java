@@ -11,7 +11,6 @@ public class Tank {
     private Texture tankImage;
     private int direction;
     private Rectangle tank;
-    private boolean moveable = true;
 
     public Tank(Texture tankImage, int direction,float x, float y){
         this.direction = direction;
@@ -52,8 +51,41 @@ public class Tank {
         return tank;
     }
 
+    public void updateTankState(float x, float y, int direction){
+        this.tank.x = x;
+        this.tank.y = y;
+        this.direction = direction;
+        switch (direction){
+            case 1:
+                tankImage = new Texture(Gdx.files.internal("tankL.gif"));
+                break;
+            case 2:
+                tankImage = new Texture(Gdx.files.internal("tankR.gif"));
+                break;
+            case 3:
+                tankImage = new Texture(Gdx.files.internal("tankU.gif"));
+                break;
+            case 4:
+                tankImage = new Texture(Gdx.files.internal("tankD.gif"));
+                break;
+            case 5:
+                tankImage = new Texture(Gdx.files.internal("tankLU.gif"));
+                break;
+            case 6:
+                tankImage = new Texture(Gdx.files.internal("tankRU.gif"));
+                break;
+            case 7:
+                tankImage = new Texture(Gdx.files.internal("tankLD.gif"));
+                break;
+            case 8:
+                tankImage = new Texture(Gdx.files.internal("tankRD.gif"));
+                break;
+            default:
+                break;
+        }
+    }
+
     public void move(int direction) {
-//        if (this.moveable) {
             switch (direction) {
                 case 1:
                     this.direction = 1;
@@ -102,10 +134,6 @@ public class Tank {
                 default:
                     break;
             }
-//        } else {
-//            tank.x += 0 * Gdx.graphics.getDeltaTime();
-//            tank.y += 0 * Gdx.graphics.getDeltaTime();
-//        }
     }
     public void restrictTank() {
 
@@ -148,14 +176,6 @@ public class Tank {
         if (tank.x > 1024 - 40) tank.x = 1024 - 40;
         if (tank.y < 0) tank.y = 0;
         if (tank.y > 768 - 40) tank.y = 768 - 40;
-    }
-
-    public void setMoveable(boolean moveable) {
-        this.moveable = moveable;
-    }
-
-    public boolean isMoveable() {
-        return moveable;
     }
 
     public void fire() {
