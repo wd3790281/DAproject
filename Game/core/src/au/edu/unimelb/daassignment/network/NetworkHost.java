@@ -106,7 +106,7 @@ public class NetworkHost implements Runnable {
             @Override
             public void run() {
                 String json = gson.toJson(message);
-//                out.println(json);
+                out.println(json);
                 out.flush();
             }
         });

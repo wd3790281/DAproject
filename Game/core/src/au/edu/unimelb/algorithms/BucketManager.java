@@ -80,7 +80,7 @@ public class BucketManager {
         b.reset();
         b.startTime = timeStamp;
         buckets.add(b);
-//        System.out.println(b);
+        System.out.println(messages);
         return messages;
     }
 

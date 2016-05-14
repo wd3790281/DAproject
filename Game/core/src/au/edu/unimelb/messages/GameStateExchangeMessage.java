@@ -12,4 +12,9 @@ public class GameStateExchangeMessage extends Message {
     }
 
     public JsonObject extraInfo;
+
+    @Override
+    public String toString() {
+        return extraInfo.toString();
+    }
 }

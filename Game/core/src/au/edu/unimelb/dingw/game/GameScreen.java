@@ -6,6 +6,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -48,7 +49,6 @@ public class GameScreen implements Screen {
     private JsonArray enemyMovement;
     private JsonArray myFire;
     private JsonArray enemyFire;
-    private boolean firstLoad;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -94,7 +94,6 @@ public class GameScreen implements Screen {
         myMovement = new JsonArray();
         enemyFire = new JsonArray();
         enemyMovement = new JsonArray();
-        firstLoad = true;
 
         walls = new Array<Rectangle>();
         for (float y = 0; y < 768; y += 21) {
@@ -126,11 +125,7 @@ public class GameScreen implements Screen {
         // tell the SpriteBatch to render in the
         // coordinate system specified by the camera.
         batch.setProjectionMatrix(camera.combined);
-        if(!firstLoad) {
-            updateGameState();
-        }
-
-        firstLoad = false;
+        updateGameState();
 
         batch.begin();
 
@@ -265,29 +260,44 @@ public class GameScreen implements Screen {
             enemyMessage = exchangeMessageHashMap.get(1);
 
             if (enemyMessage != null) {
+//                System.out.println(enemyMessage.extraInfo.toString());
                 if (Utils.identity.equals("host")) {
+                    System.out.println(enemyMessage.extraInfo);
+                    if (enemyMessage.extraInfo.get("clientx") != null
+                            && enemyMessage.extraInfo.get("clienty") != null
+                            && enemyMessage.extraInfo.get("clientd") != null ) {
+                        System.out.println(enemyMessage.extraInfo.get("clientx").getAsFloat());
+                        System.out.println(enemyMessage.extraInfo.get("clienty").getAsFloat());
+                        System.out.println(enemyMessage.extraInfo.get("clientd").getAsInt());
+                        enemyTank.updateTankState(enemyMessage.extraInfo.get("clientx").getAsFloat(),
+                                enemyMessage.extraInfo.get("clienty").getAsFloat(),
+                                enemyMessage.extraInfo.get("clientd").getAsInt());
 
-                    enemyTank.updateTankState(myMessage.extraInfo.get("clientx").getAsFloat(),
-                            myMessage.extraInfo.get("clienty").getAsFloat(),
-                            myMessage.extraInfo.get("clientd").getAsInt());
-
-                    enemyMovement = enemyMessage.extraInfo.getAsJsonArray("client");
-                    enemyFire = enemyMessage.extraInfo.getAsJsonArray("clientf");
+                        enemyMovement = enemyMessage.extraInfo.getAsJsonArray("client");
+                        enemyFire = enemyMessage.extraInfo.getAsJsonArray("clientf");
+                    }
                 } else {
+                    if (enemyMessage.extraInfo.get("hostx") != null
+                            && enemyMessage.extraInfo.get("hosty") != null
+                            && enemyMessage.extraInfo.get("hostd") != null ) {
 
-                    enemyTank.updateTankState(myMessage.extraInfo.get("hostx").getAsFloat(),
-                            myMessage.extraInfo.get("hosty").getAsFloat(),
-                            myMessage.extraInfo.get("hostd").getAsInt());
+                        enemyTank.updateTankState(enemyMessage.extraInfo.get("hostx").getAsFloat(),
+                                enemyMessage.extraInfo.get("hosty").getAsFloat(),
+                                enemyMessage.extraInfo.get("hostd").getAsInt());
 
-                    enemyMovement = enemyMessage.extraInfo.getAsJsonArray("host");
-                    enemyFire = enemyMessage.extraInfo.getAsJsonArray("hostf");
+                        enemyMovement = enemyMessage.extraInfo.getAsJsonArray("host");
+                        enemyFire = enemyMessage.extraInfo.getAsJsonArray("hostf");
+                    }
                 }
             }
 
             myMessage = exchangeMessageHashMap.get(0);
 
             if (myMessage != null) {
-
+//                System.out.println(myMessage.extraInfo.toString());
+                if (myMessage.extraInfo.get(Utils.identity + "x") != null
+                        && myMessage.extraInfo.get(Utils.identity + "y") != null
+                        && myMessage.extraInfo.get(Utils.identity + "d") != null)
                 myTank.updateTankState(myMessage.extraInfo.get(Utils.identity + "x").getAsFloat(),
                         myMessage.extraInfo.get(Utils.identity + "y").getAsFloat(),
                         myMessage.extraInfo.get(Utils.identity + "d").getAsInt());

@@ -57,7 +57,7 @@ public class NetworkClient implements Runnable{
                 TimeOffsetDetectMessage msgToSend = new TimeOffsetDetectMessage();
                 msgToSend.lastReceiveTime = receiveTime;
                 msgToSend.sentTime = new Date().getTime();
-//                out.println(gson.toJson(msgToSend));
+                out.println(gson.toJson(msgToSend));
                 out.flush();
             }
             // We need to reverse the sign in the client
@@ -79,7 +79,7 @@ public class NetworkClient implements Runnable{
             @Override
             public void run() {
                 String json = gson.toJson(message);
-//                out.println(json);
+                out.println(json);
                 out.flush();
             }
         });
