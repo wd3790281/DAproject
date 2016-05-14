@@ -12,6 +12,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Date;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by HeguangMiao on 1/05/2016.
@@ -25,6 +28,8 @@ public class NetworkClient implements Runnable{
 
     private String ipAddress;
     private int port;
+
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public NetworkClient(String ipAddress, int port) {
         this.ipAddress = ipAddress;
@@ -69,10 +74,15 @@ public class NetworkClient implements Runnable{
         }
     }
 
-    public void send(Message message) {
-        String json = gson.toJson(message);
-        out.println(json);
-        out.flush();
+    public void send(final Message message) {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                String json = gson.toJson(message);
+                out.println(json);
+                out.flush();
+            }
+        });
     }
 
     public static void main(String[] args) {

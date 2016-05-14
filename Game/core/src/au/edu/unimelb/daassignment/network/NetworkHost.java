@@ -12,6 +12,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by HeguangMiao on 1/05/2016.
@@ -23,6 +25,8 @@ public class NetworkHost implements Runnable {
     private PrintWriter out;
     private BufferedReader reader;
     private Gson gson = new Gson();
+
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public NetworkHost(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
@@ -97,10 +101,15 @@ public class NetworkHost implements Runnable {
         }
     }
 
-    public void send(Message message) {
-        String json = gson.toJson(message);
-        out.println(json);
-        out.flush();
+    public void send(final Message message) {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                String json = gson.toJson(message);
+                out.println(json);
+                out.flush();
+            }
+        });
     }
 
     public static void main(String[] args) throws IOException {
