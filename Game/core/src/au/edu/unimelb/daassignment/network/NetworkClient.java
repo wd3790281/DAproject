@@ -64,6 +64,11 @@ public class NetworkClient implements Runnable{
         }
     }
 
+    public void send(Message message) {
+        String json = gson.toJson(message);
+        out.println(json);
+    }
+
     public static void main(String[] args) {
         new NetworkClient("localhost", 3051).run();
     }
