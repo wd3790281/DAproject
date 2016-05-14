@@ -157,38 +157,38 @@ public class Tank {
     public boolean isMoveable() {
         return moveable;
     }
-    //    public void fire() {
-//
-//        Texture bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
-//        switch (this.direction) {
-//            case 1:
-//                bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
-//                break;
-//            case 2:
-//                bulletImage = new Texture(Gdx.files.internal("bulletR.gif"));
-//                break;
-//            case 3:
-//                bulletImage = new Texture(Gdx.files.internal("bulletU.gif"));
-//                break;
-//            case 4:
-//                bulletImage = new Texture(Gdx.files.internal("bulletD.gif"));
-//                break;
-//            case 5:
-//                bulletImage = new Texture(Gdx.files.internal("bulletLU.gif"));
-//                break;
-//            case 6:
-//                bulletImage = new Texture(Gdx.files.internal("bulletRU.gif"));
-//                break;
-//            case 7:
-//                bulletImage = new Texture(Gdx.files.internal("bulletLD.gif"));
-//                break;
-//            case 8:
-//                bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
-//        }
-//
-//        Bullet bullet = new Bullet(bulletImage, direction, tank.x, tank.y);
-//        BusProvider.getInstance().post(bullet);
-//        System.out.println("published");
-//    }
+
+    public void fire() {
+
+        Texture bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
+        switch (this.direction) {
+            case 1:
+                bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
+                break;
+            case 2:
+                bulletImage = new Texture(Gdx.files.internal("bulletR.gif"));
+                break;
+            case 3:
+                bulletImage = new Texture(Gdx.files.internal("bulletU.gif"));
+                break;
+            case 4:
+                bulletImage = new Texture(Gdx.files.internal("bulletD.gif"));
+                break;
+            case 5:
+                bulletImage = new Texture(Gdx.files.internal("bulletLU.gif"));
+                break;
+            case 6:
+                bulletImage = new Texture(Gdx.files.internal("bulletRU.gif"));
+                break;
+            case 7:
+                bulletImage = new Texture(Gdx.files.internal("bulletLD.gif"));
+                break;
+            case 8:
+                bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
+        }
+        Bullet bullet = new Bullet(bulletImage, direction, tank.x, tank.y);
+        Utils.bus.post(bullet);
+
+    }
 
 }

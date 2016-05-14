@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Interner;
+import com.google.common.eventbus.Subscribe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -46,6 +47,7 @@ public class GameScreen implements Screen {
     private HashMap<Integer, GameStateExchangeMessage> exchangeMessageHashMap;
     private GameStateExchangeMessage enemyMessage;
     private Array<Integer> enemyMovement;
+    private Array<Integer> myFireAction;
 
     public GameScreen(Game game){
         this.game = game;
@@ -59,6 +61,9 @@ public class GameScreen implements Screen {
         Texture enemyTankImage = new Texture(Gdx.files.internal("tankL.gif"));
         mDirection = 2;
         message = new GameStateExchangeMessage();
+
+        Utils.bus.register(this);
+
         // load the drop sound effect and the rain background "music"
 //        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
 //        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
@@ -83,6 +88,7 @@ public class GameScreen implements Screen {
         bullets = new Array<Bullet>();
 
         myPressedKeys = new Array<Integer>();
+        myFireAction = new Array<Integer>();
 
         walls = new Array<Rectangle>();
         for (float y = 0; y < 768; y += 21) {
@@ -127,28 +133,39 @@ public class GameScreen implements Screen {
         batch.end();
 
         myPressedKeys.clear();
+        myFireAction.clear();
 
         exchangeMessageHashMap = BucketManager.defaultManager.getMessages();
         if (exchangeMessageHashMap != null) {
             enemyMessage = exchangeMessageHashMap.get(1);
 
             if (enemyMessage != null) {
-                JsonArray jsonArray;
+                JsonArray moveArray;
                 if (Utils.identity.equals("host")) {
-                    jsonArray = enemyMessage.extraInfo.getAsJsonArray("client");
+                    moveArray = enemyMessage.extraInfo.getAsJsonArray("client");
                 } else {
-                    jsonArray = enemyMessage.extraInfo.getAsJsonArray("host");
+                    moveArray = enemyMessage.extraInfo.getAsJsonArray("host");
                 }
                 System.out.println("game" + " " + enemyMessage.extraInfo.toString());
 
-                for (JsonElement i : jsonArray) {
+                for (JsonElement i : moveArray) {
                     enemyTank.move(i.getAsInt());
+                }
+
+                JsonArray fireArray;
+                if (Utils.identity.equals("host")) {
+                    fireArray = enemyMessage.extraInfo.getAsJsonArray("clientf");
+                } else {
+                    fireArray = enemyMessage.extraInfo.getAsJsonArray("hostf");
+                }
+                for (JsonElement i : fireArray) {
+                    enemyTank.fire();
                 }
             }
         }
 
         enemyTank.inBound();
-        
+
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.UP)){
@@ -199,7 +216,10 @@ public class GameScreen implements Screen {
                 myPressedKeys.add(4);
             }
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) fire();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            myTank.fire();
+            myFireAction.add(1);
+        }
 
         // make sure the myTank stays within the screen bounds
         myTank.inBound();
@@ -236,35 +256,39 @@ public class GameScreen implements Screen {
 
     }
 
-    public void fire() {
-
-        switch (myTank.getDirection()) {
-            case 1:
-                bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
-                break;
-            case 2:
-                bulletImage = new Texture(Gdx.files.internal("bulletR.gif"));
-                break;
-            case 3:
-                bulletImage = new Texture(Gdx.files.internal("bulletU.gif"));
-                break;
-            case 4:
-                bulletImage = new Texture(Gdx.files.internal("bulletD.gif"));
-                break;
-            case 5:
-                bulletImage = new Texture(Gdx.files.internal("bulletLU.gif"));
-                break;
-            case 6:
-                bulletImage = new Texture(Gdx.files.internal("bulletRU.gif"));
-                break;
-            case 7:
-                bulletImage = new Texture(Gdx.files.internal("bulletLD.gif"));
-                break;
-            case 8:
-                bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
-        }
-
-        Bullet bullet = new Bullet(bulletImage, myTank.getDirection(), myTank.getTank().getX(), myTank.getTank().getY());
+//    public void fire() {
+//
+//        switch (myTank.getDirection()) {
+//            case 1:
+//                bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
+//                break;
+//            case 2:
+//                bulletImage = new Texture(Gdx.files.internal("bulletR.gif"));
+//                break;
+//            case 3:
+//                bulletImage = new Texture(Gdx.files.internal("bulletU.gif"));
+//                break;
+//            case 4:
+//                bulletImage = new Texture(Gdx.files.internal("bulletD.gif"));
+//                break;
+//            case 5:
+//                bulletImage = new Texture(Gdx.files.internal("bulletLU.gif"));
+//                break;
+//            case 6:
+//                bulletImage = new Texture(Gdx.files.internal("bulletRU.gif"));
+//                break;
+//            case 7:
+//                bulletImage = new Texture(Gdx.files.internal("bulletLD.gif"));
+//                break;
+//            case 8:
+//                bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
+//        }
+//
+//        Bullet bullet = new Bullet(bulletImage, myTank.getDirection(), myTank.getTank().getX(), myTank.getTank().getY());
+//        bullets.add(bullet);
+//    }
+    @Subscribe
+    private void addBullet(Bullet bullet){
         bullets.add(bullet);
     }
 
@@ -276,6 +300,13 @@ public class GameScreen implements Screen {
 //            System.out.println(i);
         }
         jsonObject.add(Utils.identity, myMove);
+
+        JsonArray fire = new JsonArray();
+
+        for (Integer j : myFireAction){
+            fire.add(j);
+        }
+        jsonObject.add(Utils.identity + "f", fire);
 
         message.extraInfo = jsonObject;
         if (Utils.identity.equals("host")){
