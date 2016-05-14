@@ -1,5 +1,6 @@
 package au.edu.unimelb.daassignment.network;
 
+import au.edu.unimelb.messages.Message;
 import au.edu.unimelb.messages.TimeOffsetDetectMessage;
 import com.google.gson.Gson;
 
@@ -90,6 +91,11 @@ public class NetworkHost implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void send(Message message) {
+        String json = gson.toJson(message);
+        out.println(json);
     }
 
     public static void main(String[] args) throws IOException {
