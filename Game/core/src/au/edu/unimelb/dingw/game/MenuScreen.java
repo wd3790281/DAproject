@@ -1,5 +1,7 @@
 package au.edu.unimelb.dingw.game;
 
+import au.edu.unimelb.daassignment.network.NetworkClient;
+import au.edu.unimelb.daassignment.network.NetworkHost;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -12,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
+
+import java.io.IOException;
 
 /**
  * Created by dingwang on 16/5/4.
@@ -161,9 +165,22 @@ public class MenuScreen implements Screen{
         winConnect.setVisible(true);
     }
 
-    private void onConnectGameClicked(){
-        game.setScreen(new GameScreen(game));
-//        onCancelClicked();
+    private void onConnectGameClicked(String identity) {
+        if (identity.equals("host")) {
+            try {
+                Utils.host = new NetworkHost(5000);
+                Utils.identity = "host";
+                game.setScreen(new GameScreen(game));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else {
+            Utils.client = new NetworkClient(ipAddress.getText(), 5000 );
+            Utils.identity = "client";
+            game.setScreen(new GameScreen(game));
+
+        }
     }
 
     private void onCancelClicked(){
@@ -191,7 +208,7 @@ public class MenuScreen implements Screen{
         connect.addListener(new ChangeListener() {
             @Override
             public void changed (ChangeEvent event, Actor actor) {
-                onConnectGameClicked();
+                onConnectGameClicked("client");
             }
         });
 
@@ -230,7 +247,7 @@ public class MenuScreen implements Screen{
         start.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                onConnectGameClicked();
+                onConnectGameClicked("host");
             }
         });
         winWait.addActor(start);
