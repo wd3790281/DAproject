@@ -43,6 +43,7 @@ public class GameScreen implements Screen {
     public void show() {
         wallImage = new Texture(Gdx.files.internal("commonWall.gif"));
         tankImage = new Texture(Gdx.files.internal("tankR.gif"));
+        Texture enemyTankImage = new Texture(Gdx.files.internal("tankL.gif"));
         mDirection = 2;
 
         // load the drop sound effect and the rain background "music"
@@ -58,7 +59,13 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
 
         // create a Rectangle to logically represent the myTank
-        myTank = new Tank(tankImage, mDirection, 492, 20);
+        if (Utils.identity.equals("host")) {
+            myTank = new Tank(tankImage, mDirection, 492, 20);
+            enemyTank = new Tank(enemyTankImage, 1, 492, 700);
+        } else {
+            myTank = new Tank(enemyTankImage, 1, 492, 700 );
+            enemyTank = new Tank(tankImage, mDirection, 492, 20);
+        }
 
         bullets = new Array<Bullet>();
 
@@ -96,7 +103,7 @@ public class GameScreen implements Screen {
 
         batch.begin();
         batch.draw(myTank.getTankImage(), myTank.getTank().getX(), myTank.getTank().getY());
-
+        batch.draw(enemyTank.getTankImage(), enemyTank.getTank().getX(), enemyTank.getTank().getY());
         for (Bullet bullet : bullets) {
             batch.draw(bullet.getBulletImage(), bullet.getBullet().x, bullet.getBullet().y);
         }
@@ -171,6 +178,12 @@ public class GameScreen implements Screen {
 
             bullet.changeBulletPosition();
             if (bullet.outOfScreen()) bullets.removeIndex(i);
+            if (bullet.getBullet().overlaps(myTank.getTank())) {
+                bullets.removeIndex(i);
+
+            } else if (bullet.getBullet().overlaps(enemyTank.getTank())){
+                bullets.removeIndex(i);
+            }
             for (int j = 0; j < walls.size; j ++){
                 Rectangle wall = walls.get(j);
                 if (bullet.getBullet().overlaps(wall) || wall.overlaps(bullet.getBullet()) || wall.contains(bullet.getBullet())) {
