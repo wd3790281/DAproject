@@ -88,8 +88,8 @@ public class MenuScreen implements Screen{
 
     @Override
     public void hide() {
-        stage.dispose();
-        skinLibgdx.dispose();
+//        stage.dispose();
+//        skinLibgdx.dispose();
     }
 
     @Override
@@ -175,7 +175,7 @@ public class MenuScreen implements Screen{
                 Utils.identity = "host";
                 Thread host = new Thread(Utils.host);
                 host.start();
-                game.setScreen(new GameScreen(game));
+//                game.setScreen(new GameScreen(game));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -185,7 +185,7 @@ public class MenuScreen implements Screen{
             Utils.identity = "client";
             Thread client = new Thread(Utils.client);
             client.start();
-            game.setScreen(new GameScreen(game));
+//            game.setScreen(new GameScreen(game));
 
         }
     }
@@ -275,8 +275,16 @@ public class MenuScreen implements Screen{
     }
 
     @Subscribe
-    public void startGame() {
-        game.setScreen(new GameScreen(game));
+    public void startGame(final String s) {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                if (Utils.CONNECTED_NOTIFICATION.equals(s)) {
+                    game.setScreen(new GameScreen(game));
+                }
+            }
+        });
+
     }
 }
 

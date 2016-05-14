@@ -3,6 +3,7 @@ package au.edu.unimelb.daassignment.network;
 import au.edu.unimelb.algorithms.BucketManager;
 import au.edu.unimelb.messages.GameStateExchangeMessage;
 import au.edu.unimelb.messages.Message;
+import com.badlogic.gdx.Game;
 import com.google.gson.Gson;
 
 /**
@@ -19,6 +20,11 @@ public class MessageHandler {
     public void handleMessage(String messageString) {
         Message msg = gson.fromJson(messageString, Message.class);
         switch (msg.messageType) {
+            case GameStateExchange:
+                handleGameStateExchangeMessage(gson.fromJson(messageString, GameStateExchangeMessage.class));
+                break;
+            default:
+                break;
         }
     }
     public void handleGameStateExchangeMessage(GameStateExchangeMessage msg) {

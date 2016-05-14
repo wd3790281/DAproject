@@ -1,5 +1,6 @@
 package au.edu.unimelb.daassignment.network;
 
+import au.edu.unimelb.dingw.game.Utils;
 import au.edu.unimelb.messages.Message;
 import au.edu.unimelb.messages.TimeOffsetDetectMessage;
 import com.google.gson.Gson;
@@ -84,7 +85,9 @@ public class NetworkHost implements Runnable {
             long timeOffsetToClient = ((oi - d/2) + (oi + d/2)) / 2;
             // here we tell the client the result
             out.println(timeOffsetToClient);
+            out.flush();
             System.out.println(timeOffsetToClient);
+            Utils.bus.post(Utils.CONNECTED_NOTIFICATION);
             MessageHandler handler = new MessageHandler(timeOffsetToClient);
             while (!Thread.interrupted()) {
                 handler.handleMessage(reader.readLine());
@@ -97,6 +100,7 @@ public class NetworkHost implements Runnable {
     public void send(Message message) {
         String json = gson.toJson(message);
         out.println(json);
+        out.flush();
     }
 
     public static void main(String[] args) throws IOException {

@@ -1,5 +1,6 @@
 package au.edu.unimelb.daassignment.network;
 
+import au.edu.unimelb.dingw.game.Utils;
 import au.edu.unimelb.messages.GameStateExchangeMessage;
 import au.edu.unimelb.messages.Message;
 import au.edu.unimelb.messages.TimeOffsetDetectMessage;
@@ -52,12 +53,16 @@ public class NetworkClient implements Runnable{
                 msgToSend.lastReceiveTime = receiveTime;
                 msgToSend.sentTime = new Date().getTime();
                 out.println(gson.toJson(msgToSend));
+                out.flush();
             }
             // We need to reverse the sign in the client
             long timeOffsetToHost = -Long.parseLong(reader.readLine());
+            Utils.bus.post(Utils.CONNECTED_NOTIFICATION);
             MessageHandler handler = new MessageHandler(timeOffsetToHost);
             while (!Thread.interrupted()) {
-                handler.handleMessage(reader.readLine());
+                String line = reader.readLine();
+                System.out.println(line);
+                handler.handleMessage(line);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -67,6 +72,7 @@ public class NetworkClient implements Runnable{
     public void send(Message message) {
         String json = gson.toJson(message);
         out.println(json);
+        out.flush();
     }
 
     public static void main(String[] args) {

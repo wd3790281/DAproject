@@ -39,6 +39,11 @@ public class BucketManager {
             endTime = -1;
             messageMap.clear();
         }
+
+        @Override
+        public String toString() {
+            return messageMap.toString();
+        }
     }
 
     private CircularArray<Bucket> buckets;
@@ -75,6 +80,7 @@ public class BucketManager {
         b.reset();
         b.startTime = timeStamp;
         buckets.add(b);
+//        System.out.println(b);
         return messages;
     }
 

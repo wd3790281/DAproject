@@ -14,4 +14,5 @@ public class Utils {
     public static String identity;
     public static EventBus bus = new EventBus();
 
+    public static final String CONNECTED_NOTIFICATION = "CONNECTED_NOTIFICATION";
 }

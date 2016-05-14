@@ -1,17 +1,26 @@
 package au.edu.unimelb.dingw.game;
 
+import au.edu.unimelb.algorithms.BucketManager;
+import au.edu.unimelb.messages.GameStateExchangeMessage;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntArray;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Interner;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by dingwang on 16/5/4.
@@ -32,7 +41,11 @@ public class GameScreen implements Screen {
     private Tank enemyTank;
     private Array<Bullet> bullets;
     private Array<Rectangle> walls;
-    private Array<Integer> pressedKeys;
+    private Array<Integer> myPressedKeys;
+    private GameStateExchangeMessage message;
+    private HashMap<Integer, GameStateExchangeMessage> exchangeMessageHashMap;
+    private GameStateExchangeMessage enemyMessage;
+    private Array<Integer> enemyMovement;
 
     public GameScreen(Game game){
         this.game = game;
@@ -45,7 +58,7 @@ public class GameScreen implements Screen {
         tankImage = new Texture(Gdx.files.internal("tankR.gif"));
         Texture enemyTankImage = new Texture(Gdx.files.internal("tankL.gif"));
         mDirection = 2;
-
+        message = new GameStateExchangeMessage();
         // load the drop sound effect and the rain background "music"
 //        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
 //        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
@@ -69,7 +82,7 @@ public class GameScreen implements Screen {
 
         bullets = new Array<Bullet>();
 
-        pressedKeys = new Array<Integer>();
+        myPressedKeys = new Array<Integer>();
 
         walls = new Array<Rectangle>();
         for (float y = 0; y < 768; y += 21) {
@@ -113,57 +126,77 @@ public class GameScreen implements Screen {
         }
         batch.end();
 
-        pressedKeys.clear();
+        myPressedKeys.clear();
 
+        exchangeMessageHashMap = BucketManager.defaultManager.getMessages();
+        if (exchangeMessageHashMap != null) {
+            enemyMessage = exchangeMessageHashMap.get(1);
 
+            if (enemyMessage != null) {
+                JsonArray jsonArray;
+                if (Utils.identity.equals("host")) {
+                    jsonArray = enemyMessage.extraInfo.getAsJsonArray("client");
+                } else {
+                    jsonArray = enemyMessage.extraInfo.getAsJsonArray("host");
+                }
+                System.out.println("game" + " " + enemyMessage.extraInfo.toString());
+
+                for (JsonElement i : jsonArray) {
+                    enemyTank.move(i.getAsInt());
+                }
+            }
+        }
+
+        enemyTank.inBound();
+        
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.UP)){
                 myTank.move(5);
-                pressedKeys.add(5);
+                myPressedKeys.add(5);
             }else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
                 myTank.move(7);
-                pressedKeys.add(7);
+                myPressedKeys.add(7);
             }else {
                 myTank.move(1);
-                pressedKeys.add(1);
+                myPressedKeys.add(1);
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             if (Gdx.input.isKeyPressed(Input.Keys.UP)){
                 myTank.move(6);
-                pressedKeys.add(6);
+                myPressedKeys.add(6);
             }else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
                 myTank.move(8);
-                pressedKeys.add(8);
+                myPressedKeys.add(8);
             }else {
                 myTank.move(2);
-                pressedKeys.add(2);
+                myPressedKeys.add(2);
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)){
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
                 myTank.move(5);
-                pressedKeys.add(5);
+                myPressedKeys.add(5);
             }else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
                 myTank.move(6);
-                pressedKeys.add(6);
+                myPressedKeys.add(6);
             }else {
                 myTank.move(3);
-                pressedKeys.add(3);
+                myPressedKeys.add(3);
             }
 
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
                 myTank.move(7);
-                pressedKeys.add(7);
+                myPressedKeys.add(7);
             }else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
                 myTank.move(8);
-                pressedKeys.add(8);
+                myPressedKeys.add(8);
             }else {
                 myTank.move(4);
-                pressedKeys.add(4);
+                myPressedKeys.add(4);
             }
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) fire();
@@ -199,6 +232,7 @@ public class GameScreen implements Screen {
                 myTank.restrictTank();
             }
         }
+        sendMessage();
 
     }
 
@@ -234,6 +268,24 @@ public class GameScreen implements Screen {
         bullets.add(bullet);
     }
 
+    private void sendMessage(){
+        JsonObject jsonObject = new JsonObject();
+        JsonArray myMove = new JsonArray();
+        for (Integer i : myPressedKeys){
+            myMove.add(i);
+//            System.out.println(i);
+        }
+        jsonObject.add(Utils.identity, myMove);
+
+        message.extraInfo = jsonObject;
+        if (Utils.identity.equals("host")){
+            Utils.host.send(message);
+        } else {
+            Utils.client.send(message);
+        }
+//        System.out.println(message.extraInfo.toString());
+
+    }
     @Override
     public void resize(int width, int height) {
 
@@ -261,4 +313,5 @@ public class GameScreen implements Screen {
     public void dispose() {
 
     }
+
 }

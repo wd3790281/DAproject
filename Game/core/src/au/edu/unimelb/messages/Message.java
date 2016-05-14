@@ -13,4 +13,9 @@ public class Message {
 
     public MessageType messageType;
     public long timeStamp;
+
+    @Override
+    public String toString() {
+        return messageType.toString();
+    }
 }
