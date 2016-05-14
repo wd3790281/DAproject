@@ -170,6 +170,8 @@ public class MenuScreen implements Screen{
             try {
                 Utils.host = new NetworkHost(5000);
                 Utils.identity = "host";
+                Thread host = new Thread(Utils.host);
+                host.start();
                 game.setScreen(new GameScreen(game));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -178,6 +180,8 @@ public class MenuScreen implements Screen{
         }else {
             Utils.client = new NetworkClient(ipAddress.getText(), 5000 );
             Utils.identity = "client";
+            Thread client = new Thread(Utils.client);
+            client.start();
             game.setScreen(new GameScreen(game));
 
         }

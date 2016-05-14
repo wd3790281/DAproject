@@ -84,6 +84,7 @@ public class NetworkHost implements Runnable {
             long timeOffsetToClient = ((oi - d/2) + (oi + d/2)) / 2;
             // here we tell the client the result
             out.println(timeOffsetToClient);
+            System.out.println(timeOffsetToClient);
             MessageHandler handler = new MessageHandler(timeOffsetToClient);
             while (!Thread.interrupted()) {
                 handler.handleMessage(reader.readLine());
