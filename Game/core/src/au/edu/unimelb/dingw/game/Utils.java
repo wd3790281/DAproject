@@ -13,6 +13,8 @@ public class Utils {
     public static NetworkClient client;
     public static String identity;
     public static EventBus bus = new EventBus();
+    public static String winOrLose;
 
     public static final String CONNECTED_NOTIFICATION = "CONNECTED_NOTIFICATION";
+
 }

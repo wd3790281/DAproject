@@ -24,13 +24,6 @@ import java.io.IOException;
  */
 public class MenuScreen implements Screen{
 
-//    public static final String TEXTURE_ATLAS_UI = "images/canyonbunny-ui.pack";
-    public static final String TEXTURE_ATLAS_LIBGDX_UI = "uiskin.atlas";
-    // Location of description file for skins
-    public static final String SKIN_LIBGDX_UI = "uiskin.json";
-//    public static final String SKIN_CANYONBUNNY_UI = "images/canyonbunny-ui.json";
-
-
     private Stage stage;
     private Skin skinLibgdx;
 
@@ -42,9 +35,6 @@ public class MenuScreen implements Screen{
     private TextButton joinButton;
     private TextButton connect;
     private TextButton cancel;
-    private Slider sldMusic;
-    private CheckBox chkShowFpsCounter;
-    private BitmapFont font;
     private TextField ipAddress;
 
     public MenuScreen (Game game) {
@@ -54,7 +44,6 @@ public class MenuScreen implements Screen{
     @Override
     public void show() {
         stage = new Stage(new StretchViewport(1024, 768));
-//        font = new BitmapFont(Gdx.files.internal("font.fnt"));
         Gdx.input.setInputProcessor(stage);
         rebuildStage();
         Utils.bus.register(this);
@@ -106,9 +95,6 @@ public class MenuScreen implements Screen{
         Table option = buildOptWinButtons();
         Table connectWindow = buildConnectWindowLayer();
         Table waitWindow = buildWaitingWindow();
-//        Table layerLogos = buildLogosLayer();
-//        Table layerControls = buildControlsLayer();
-//        Table layerOptionsWindow = buildConnectWindowLayer();
         // assemble stage for menu screen
         stage.clear();
         Stack stack = new Stack();

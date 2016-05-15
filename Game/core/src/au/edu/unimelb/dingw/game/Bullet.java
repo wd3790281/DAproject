@@ -34,20 +34,20 @@ public class Bullet {
                 this.bullet.y = y + 15;
                 break;
             case 3:
-                this.bullet.y = y + 15;
-                this.bullet.x = x + 13;
+                this.bullet.y = y + 40;
+                this.bullet.x = x + 12;
                 break;
             case 4:
                 this.bullet.y = y;
-                this.bullet.x = x + 13;
+                this.bullet.x = x + 12;
                 break;
             case 5:
                 this.bullet.y = y + 31;
                 this.bullet.x = x;
                 break;
             case 6:
-                this.bullet.y = y + 10;
-                this.bullet.x = x + 10;
+                this.bullet.y = y + 40;
+                this.bullet.x = x + 40;
                 break;
             case 7:
                 this.bullet.y = y - 10;

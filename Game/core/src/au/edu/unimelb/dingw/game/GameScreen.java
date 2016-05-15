@@ -27,7 +27,6 @@ public class GameScreen implements Screen {
 
     private Game game;
 
-    private Texture bulletImage;
     private Texture tankImage;
     private Texture wallImage;
     private int mDirection;
@@ -196,9 +195,13 @@ public class GameScreen implements Screen {
             if (bullet.outOfScreen()) bullets.removeIndex(i);
             if (bullet.getBullet().overlaps(myTank.getTank())) {
                 bullets.removeIndex(i);
+                Utils.winOrLose = "lose";
+                game.setScreen(new EndScreen(game));
 
             } else if (bullet.getBullet().overlaps(enemyTank.getTank())) {
                 bullets.removeIndex(i);
+                Utils.winOrLose = "win";
+                game.setScreen(new EndScreen(game));
             }
             for (int j = 0; j < walls.size; j++) {
                 Rectangle wall = walls.get(j);
@@ -346,7 +349,6 @@ public class GameScreen implements Screen {
     @Override
     public void hide() {
         wallImage.dispose();
-        bulletImage.dispose();
         tankImage.dispose();
         batch.dispose();
     }
