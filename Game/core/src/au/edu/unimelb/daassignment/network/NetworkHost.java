@@ -44,6 +44,7 @@ public class NetworkHost implements Runnable {
             TimeOffsetDetectMessage[] receivedMessages = new TimeOffsetDetectMessage[8];
             long[] localMessageReceiveTimes = new long[8];
 
+            // we need 8 messages to estimate the offset
             for (int i = 0; i < 8; i++) {
                 TimeOffsetDetectMessage msgToSend = new TimeOffsetDetectMessage();
                 if (i != 0) {
@@ -62,6 +63,8 @@ public class NetworkHost implements Runnable {
                 }
                 receivedMessages[i] = msg;
             }
+
+            // choose the message pair that has minimum latency
             int minDelayIndex = 0;
             long minDelay = receivedMessages[0].lastReceiveTime
                     - sentMessages[0].sentTime
@@ -78,6 +81,8 @@ public class NetworkHost implements Runnable {
                     minDelayIndex = i;
                 }
             }
+
+            // estimate time offset according to that pair of messages
             long d = receivedMessages[minDelayIndex].lastReceiveTime
                     - sentMessages[minDelayIndex].sentTime
                     + localMessageReceiveTimes[minDelayIndex]
