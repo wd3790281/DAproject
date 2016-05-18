@@ -7,13 +7,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.google.common.eventbus.Subscribe;
 
@@ -43,6 +41,7 @@ public class MenuScreen implements Screen{
 
     @Override
     public void show() {
+        // make the stage size 1024*768
         stage = new Stage(new StretchViewport(1024, 768));
         Gdx.input.setInputProcessor(stage);
         rebuildStage();
@@ -56,8 +55,6 @@ public class MenuScreen implements Screen{
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
-//        if(Gdx.input.isTouched())
-//            game.setScreen(new GameScreen(game));
     }
 
     @Override
@@ -77,8 +74,6 @@ public class MenuScreen implements Screen{
 
     @Override
     public void hide() {
-//        stage.dispose();
-//        skinLibgdx.dispose();
     }
 
     @Override
@@ -88,6 +83,7 @@ public class MenuScreen implements Screen{
     }
 
     private void rebuildStage () {
+
         skinLibgdx = new Skin(Gdx.files.internal("uiskin.json"), new TextureAtlas("uiskin.atlas"));
 
         // build all layers
@@ -110,8 +106,9 @@ public class MenuScreen implements Screen{
 
     private Table buildBackgroundLayer () {
         Table layer = new Table();
+        // set the layer position at top
         layer.top();
-        // + Background
+        // + Background image
         imgBackground = new Image(new Texture(Gdx.files.internal("background.png")));
         layer.add(imgBackground);
         return layer;
@@ -119,19 +116,20 @@ public class MenuScreen implements Screen{
 
     private Table buildOptWinButtons () {
         Table tbl = new Table();
-        // + Separator
+        // + host game button
         hostButton = new TextButton("Host Game", skinLibgdx);
         tbl.addActor(hostButton);
         hostButton.setSize(300,50);
         hostButton.setPosition(362, 300);
         hostButton.setColor(0,0,0,1);
+        // add event handler
         hostButton.addListener(new ChangeListener() {
             @Override
             public void changed (ChangeEvent event, Actor actor) {
                 onHostGameClicked();
             }
         });
-        // + Cancel Button with event handler
+        // + join game button and event handler
         joinButton = new TextButton("Join Game", skinLibgdx);
         tbl.addActor(joinButton);
         joinButton.setSize(300,50);
@@ -146,34 +144,14 @@ public class MenuScreen implements Screen{
         return tbl;
     }
 
+    // make waiting for connection window visable
     private void onHostGameClicked(){
         winWait.setVisible(true);
     }
 
+    // make connection window visable
     private void onJoinGameClicked(){
         winConnect.setVisible(true);
-    }
-
-    private void onConnectGameClicked(String identity) {
-        if (identity.equals("host")) {
-            try {
-                Utils.host = new NetworkHost(5000);
-                Utils.identity = "host";
-                Thread host = new Thread(Utils.host);
-                host.start();
-//                game.setScreen(new GameScreen(game));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }else {
-            Utils.client = new NetworkClient(ipAddress.getText(), 5000 );
-            Utils.identity = "client";
-            Thread client = new Thread(Utils.client);
-            client.start();
-//            game.setScreen(new GameScreen(game));
-
-        }
     }
 
     private void onCancelClicked(){
@@ -221,18 +199,42 @@ public class MenuScreen implements Screen{
         return winConnect;
     }
 
+    // if connect button clicked, open socket for connection
+    private void onConnectGameClicked(String identity) {
+        if (identity.equals("host")) {
+            try {
+                Utils.host = new NetworkHost(5000);
+                Utils.identity = "host";
+                Thread host = new Thread(Utils.host);
+                host.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else {
+            Utils.client = new NetworkClient(ipAddress.getText(), 5000 );
+            Utils.identity = "client";
+            Thread client = new Thread(Utils.client);
+            client.start();
+
+        }
+    }
+
+    // build waiting for connection window and make it invisable as default
     private Table buildWaitingWindow(){
         winWait = new Window("Wait", skinLibgdx);
         winWait.setSize(300,300);
         winWait.right().bottom();
         winWait.setVisible(false);
 
+        // + label
         Label label = new Label("Waiting for connection", skinLibgdx);
         label.setStyle(skinLibgdx.get("small", Label.LabelStyle.class));
         label.setSize(200, 40);
         label.setPosition(50, 150);
         winWait.addActor(label);
 
+        // + start game button
         TextButton start = new TextButton("start", skinLibgdx);
         start.setStyle(skinLibgdx.get("connect", TextButton.TextButtonStyle.class));
         start.setSize(200, 40);
@@ -245,6 +247,7 @@ public class MenuScreen implements Screen{
         });
         winWait.addActor(start);
 
+        // + cancel button
         TextButton cancelHost = new TextButton("cancel", skinLibgdx);
         cancelHost.setStyle(skinLibgdx.get("connect", TextButton.TextButtonStyle.class));
         cancelHost.setSize(200, 40);
@@ -260,6 +263,7 @@ public class MenuScreen implements Screen{
         return winWait;
     }
 
+    // once the get the connection succeed flag, the game will start
     @Subscribe
     public void startGame(final String s) {
         Gdx.app.postRunnable(new Runnable() {

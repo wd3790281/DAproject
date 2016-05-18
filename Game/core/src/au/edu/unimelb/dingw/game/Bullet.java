@@ -7,7 +7,10 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * Created by dingwang on 16/4/28.
  */
+
+// this class is bullet class, it has message to create the bullet and make the bullet move
 public class Bullet {
+
     private Texture bulletImage;
     private int direction;
     private Rectangle bullet;
@@ -19,6 +22,8 @@ public class Bullet {
 
     }
 
+    // the x and y is the postion of the tank who fires, this method compute the
+    // creation position of the bullet according to the tank
     private void createBullet(float x, float y) {
         this.bullet = new Rectangle();
         this.bullet.width = 2;
@@ -60,6 +65,7 @@ public class Bullet {
         }
     }
 
+    // make the bullet to move in delta time. The bullet move 200 pixels
     public void changeBulletPosition(){
         switch (direction){
             case 1:
@@ -93,6 +99,7 @@ public class Bullet {
         }
     }
 
+    // check whether the bullet is out of the screen
     public Boolean outOfScreen() {
         if ((bullet.x + 2) < 0 || bullet.x > 1024 || (bullet.y + 2) < 0 || bullet.y > 768)
             return true;

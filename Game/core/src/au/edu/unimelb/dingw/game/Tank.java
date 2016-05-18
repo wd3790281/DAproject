@@ -18,6 +18,7 @@ public class Tank {
         createTank(x, y);
     }
 
+    // create the tank at certain position
     private void createTank(float x, float y) {
         this.tank = new Rectangle();
         this.tank.width = 40;
@@ -51,6 +52,8 @@ public class Tank {
         return tank;
     }
 
+    // update the tank's latest state according to the message from bucket
+    // set the current position, change direction and the tank image
     public void updateTankState(float x, float y, int direction){
         this.tank.x = x;
         this.tank.y = y;
@@ -85,6 +88,7 @@ public class Tank {
         }
     }
 
+    // make tank move according to certain direction. The tank will move 100 pixels per delta time
     public void move(int direction) {
             switch (direction) {
                 case 1:
@@ -135,6 +139,9 @@ public class Tank {
                     break;
             }
     }
+
+    // restrict the tank when tank hit the wall. If the user still press the movement key when the tank
+    // hit the wall, it wll move towards the opsite direction to make the tank still
     public void restrictTank() {
 
         switch (this.direction) {
@@ -171,6 +178,7 @@ public class Tank {
         }
     }
 
+    // check whether the tank is in the screen
     public void inBound(){
         if (tank.x < 0) tank.x = 0;
         if (tank.x > 1024 - 40) tank.x = 1024 - 40;
@@ -178,6 +186,7 @@ public class Tank {
         if (tank.y > 768 - 40) tank.y = 768 - 40;
     }
 
+    // fire action, the fire action will create bullet in the tank's cureent direction and position
     public void fire() {
 
         Texture bulletImage = new Texture(Gdx.files.internal("bulletL.gif"));
@@ -206,6 +215,7 @@ public class Tank {
             case 8:
                 bulletImage = new Texture(Gdx.files.internal("bulletRD.gif"));
         }
+        // the tank create the bullet and post it in the bus
         Bullet bullet = new Bullet(bulletImage, direction, tank.x, tank.y);
         Utils.bus.post(bullet);
 

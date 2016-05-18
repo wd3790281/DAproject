@@ -12,8 +12,6 @@ public class MyGdxGame extends Game {
     @Override
     public void create() {
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        // Load assets
-//        Assets.instance.init(new AssetManager());
         // Start game at menu screen
         setScreen(new MenuScreen(this));
     }

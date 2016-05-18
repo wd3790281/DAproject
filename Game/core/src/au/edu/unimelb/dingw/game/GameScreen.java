@@ -7,7 +7,6 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -18,29 +17,30 @@ import com.google.common.eventbus.Subscribe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import java.util.HashMap;
 
 /**
  * Created by dingwang on 16/5/4.
  */
+
+// this class is the game screen, it is in charge of the game drawing and logic
 public class GameScreen implements Screen {
 
     private Game game;
 
-    private Texture tankImage;
-    private Texture wallImage;
-    private int mDirection;
-    //    private Sound dropSound;
-//    private Music rainMusic;
+    private Texture tankImage;  // initial tank image
+    private Texture wallImage;  // the wall image
+    private int mDirection;   // initial tank direction for mytank
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Tank myTank;
     private Tank enemyTank;
-    private Array<Bullet> bullets;
-    private Array<Rectangle> walls;
-    private Array<Integer> myPressedKeys;
-    private GameStateExchangeMessage message;
+    private Array<Bullet> bullets;    // all bullets are in this array
+    private Array<Rectangle> walls;   // containing all walls
+
+    private Array<Integer> myPressedKeys;   // this is used to record all the movement key in one delta time
+
+    private GameStateExchangeMessage message;   // message going to be sent
     private HashMap<Integer, GameStateExchangeMessage> exchangeMessageHashMap;
     private GameStateExchangeMessage enemyMessage;
     private GameStateExchangeMessage myMessage;
@@ -57,27 +57,27 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+
+        // load wall and tank image for resources
         wallImage = new Texture(Gdx.files.internal("commonWall.gif"));
         tankImage = new Texture(Gdx.files.internal("tankR.gif"));
         Texture enemyTankImage = new Texture(Gdx.files.internal("tankL.gif"));
+
+        // define default direction of my tank to right
         mDirection = 2;
         message = new GameStateExchangeMessage();
 
+        // register this class in event bus
         Utils.bus.register(this);
 
-        // load the drop sound effect and the rain background "music"
-//        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
-//        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
-
-        // start the playback of the background music immediately
-//        rainMusic.setLooping(true);
-//        rainMusic.play();
-
+        // game screen is 1024 * 768
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1024, 768);
         batch = new SpriteBatch();
 
-        // create a Rectangle to logically represent the myTank
+
+        // initial the tank according to different identity, host tank in bottom
+        // facing right, joiner tank is in top and facing left
         if (Utils.identity.equals("host")) {
             myTank = new Tank(tankImage, mDirection, 492, 20);
             enemyTank = new Tank(enemyTankImage, 1, 492, 700);
@@ -95,16 +95,18 @@ public class GameScreen implements Screen {
         enemyFire = new JsonArray();
         enemyMovement = new JsonArray();
 
+        // initialize walls on the screen
         walls = new Array<Rectangle>();
         for (float y = 0; y < 768; y += 21) {
-            createWalls(100, y);
+            createWall(100, y);
         }
         for (float y = 0; y < 768; y += 21) {
-            createWalls(y, 100);
+            createWall(y, 100);
         }
     }
 
-    private void createWalls(float x, float y) {
+    // this method is used to create wall in certain position
+    private void createWall(float x, float y) {
         Rectangle wall = new Rectangle();
         wall.x = x;
         wall.y = y;
@@ -113,9 +115,12 @@ public class GameScreen implements Screen {
         walls.add(wall);
     }
 
+    // render will loop when the screen is present, the method below will be
+    // executed between frames. Delta time means the time between two frames
     @Override
     public void render(float delta) {
 
+        // background is black
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -125,8 +130,11 @@ public class GameScreen implements Screen {
         // tell the SpriteBatch to render in the
         // coordinate system specified by the camera.
         batch.setProjectionMatrix(camera.combined);
+
+        // load the latest game state from the bucket
         updateGameState();
 
+        // begin to draw everything in the screen
         batch.begin();
 
         batch.draw(myTank.getTankImage(), myTank.getTank().getX(), myTank.getTank().getY());
@@ -140,11 +148,14 @@ public class GameScreen implements Screen {
         }
         batch.end();
 
+        // after taking the latest update from bucket, act the action locally
         action();
 
+        // clear my action at the beginning of the render, save the action and then send to bucket
         myPressedKeys.clear();
         myFireAction.clear();
 
+        // detect tank movement, 1
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
@@ -188,12 +199,24 @@ public class GameScreen implements Screen {
         }
 
 
+        // iterate the bullets array, detect if bullet collides with other element, such as
+        // tanks or walls. if happened, remove from bullets
+
         for (int i = 0; i < bullets.size; i++) {
 
             Bullet bullet = bullets.get(i);
 
+            // update every bullet position in the screen
             bullet.changeBulletPosition();
-            if (bullet.outOfScreen()) bullets.removeIndex(i);
+
+            // if the bullet has been out of the screen, remove it from the arry
+            if (bullet.outOfScreen()) {
+                bullets.removeIndex(i);
+                continue;
+            }
+
+            // detect whether the tank has collided with any tank, if the bullet hit mytank, I lose
+            // turn to the end screen and send game over message to the enemy
             if (bullet.getBullet().overlaps(myTank.getTank())) {
                 bullets.removeIndex(i);
                 Utils.winOrLose = "lose";
@@ -206,39 +229,55 @@ public class GameScreen implements Screen {
                 game.setScreen(new EndScreen(game));
                 sendGameOverMessage(false);
             }
+
+            // detect whether the bullet hit the wall, if it is, remove both of them from the screen
             for (int j = 0; j < walls.size; j++) {
                 Rectangle wall = walls.get(j);
                 if (bullet.getBullet().overlaps(wall) || wall.overlaps(bullet.getBullet()) || wall.contains(bullet.getBullet())) {
                     bullets.removeIndex(i);
                     walls.removeIndex(j);
+
                 }
 
             }
         }
+
+        // detect whether the tank has collided with the wall, if it is, restrict the tank movement.
         for (int j = 0; j < walls.size; j++) {
             Rectangle wall = walls.get(j);
             if (wall.overlaps(myTank.getTank()) || myTank.getTank().overlaps(wall)) {
                 myTank.restrictTank();
             }
         }
+
+        // send all my movement saved in myPressedKeys and myFireAction to the other player
         sendMessage();
 
     }
 
+    // this class has register on event bus, once the anyone post a bullet, it will receive the
+    // bullet and put it in the bullets array
     @Subscribe
     private void addBullet(Bullet bullet) {
         bullets.add(bullet);
     }
 
+    // this method is used to send GameStateMessage, the message will be sent in json
     private void sendMessage() {
+
+        // this message will contain my movement and fire action in this delta time,
+        // it will also send mytank's current position, direction for the counter part
+        // to do dead rekon
         JsonObject jsonObject = new JsonObject();
+
+        // send my movement in this delta time
         JsonArray myMove = new JsonArray();
         for (Integer i : myPressedKeys) {
             myMove.add(i);
-//            System.out.println(i);
         }
         jsonObject.add(Utils.identity, myMove);
 
+        // send my fire action in this delta time
         JsonArray fire = new JsonArray();
 
         for (Integer j : myFireAction) {
@@ -246,35 +285,52 @@ public class GameScreen implements Screen {
         }
         jsonObject.add(Utils.identity + "f", fire);
 
+        // send my tank's current postion and direction
         jsonObject.addProperty(Utils.identity + "x", myTank.getTank().x);
         jsonObject.addProperty(Utils.identity + "y", myTank.getTank().y);
         jsonObject.addProperty(Utils.identity + "d", myTank.getDirection());
         message.extraInfo = jsonObject;
+
+        // send message to the other player's bucket
         if (Utils.identity.equals("host")) {
             Utils.host.send(message);
         } else {
             Utils.client.send(message);
         }
-//        System.out.println(message.extraInfo.toString());
 
+        // send my movement to my own bucket manager
         BucketManager.defaultManager.receiveMessage(message, 0);
     }
 
+    // get the latest game state from the bucket, all the element state and action should
+    // get from bucket, mytank get from my bucket, enemy tank get from enemy bucket
     private void updateGameState(){
+
+        // get the game state message from bucket manager
         exchangeMessageHashMap = BucketManager.defaultManager.getMessages();
+
+        // first 3 bucket is empty, so exchangeMessageHashMap can be empty
+        // then this part is used for dead rekon. enemytank's state will
+        // be update inner if. If the other play disconnect from the game,
+        // the exchangeMessage will be empty, the enemy tank will be computed
+        // from the last action, the last information fo the enemy tank will be
+        // left for local computing.
+
         if (exchangeMessageHashMap != null) {
+
+            // get enemy tank's state from message
             enemyMessage = exchangeMessageHashMap.get(1);
 
             if (enemyMessage != null) {
-//                System.out.println(enemyMessage.extraInfo.toString());
+
+                // judge the key word according to my identity, in order to get
+                // the enemy tank's state from the message
                 if (Utils.identity.equals("host")) {
-//                    System.out.println(enemyMessage.extraInfo);
+
                     if (enemyMessage.extraInfo.get("clientx") != null
                             && enemyMessage.extraInfo.get("clienty") != null
                             && enemyMessage.extraInfo.get("clientd") != null ) {
-//                        System.out.println(enemyMessage.extraInfo.get("clientx").getAsFloat());
-//                        System.out.println(enemyMessage.extraInfo.get("clienty").getAsFloat());
-//                        System.out.println(enemyMessage.extraInfo.get("clientd").getAsInt());
+
                         enemyTank.updateTankState(enemyMessage.extraInfo.get("clientx").getAsFloat(),
                                 enemyMessage.extraInfo.get("clienty").getAsFloat(),
                                 enemyMessage.extraInfo.get("clientd").getAsInt());
@@ -297,10 +353,10 @@ public class GameScreen implements Screen {
                 }
             }
 
+            // get my tank's latest state and action from bucket manager
             myMessage = exchangeMessageHashMap.get(0);
 
             if (myMessage != null) {
-//                System.out.println(myMessage.extraInfo.toString());
                 if (myMessage.extraInfo.get(Utils.identity + "x") != null
                         && myMessage.extraInfo.get(Utils.identity + "y") != null
                         && myMessage.extraInfo.get(Utils.identity + "d") != null)
@@ -314,6 +370,7 @@ public class GameScreen implements Screen {
         }
     }
 
+    // make move and fire action according to the action array getting from bucket manager
     private void action(){
         for (JsonElement i : myMovement) {
             myTank.move(i.getAsInt());
@@ -330,8 +387,32 @@ public class GameScreen implements Screen {
         for (JsonElement i : enemyFire) {
             enemyTank.fire();
         }
+
+        // limit the tank in the range of the screen
         enemyTank.inBound();
         myTank.inBound();
+    }
+
+    // send game over message to the other player
+    private void sendGameOverMessage(boolean win){
+        GameOverMessage msg = new GameOverMessage();
+        msg.win = win;
+    }
+
+    // this class also register on the bus for game over message
+    @Subscribe
+    public void endGame(final GameOverMessage msg){
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                if (msg.win == true) {
+                    Utils.winOrLose = "win";
+                } else {
+                    Utils.winOrLose = "lose";
+                }
+                game.setScreen(new EndScreen(game));
+            }
+        });
     }
 
     @Override
@@ -349,6 +430,7 @@ public class GameScreen implements Screen {
 
     }
 
+    // disable all the resources used in this game
     @Override
     public void hide() {
         wallImage.dispose();
@@ -359,26 +441,6 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
 
-    }
-
-    private void sendGameOverMessage(boolean win){
-        GameOverMessage msg = new GameOverMessage();
-        msg.win = win;
-    }
-
-    @Subscribe
-    public void endGame(final GameOverMessage msg){
-        Gdx.app.postRunnable(new Runnable() {
-            @Override
-            public void run() {
-                if (msg.win == true) {
-                    Utils.winOrLose = "win";
-                } else {
-                    Utils.winOrLose = "lose";
-                }
-                game.setScreen(new EndScreen(game));
-            }
-        });
     }
 
 }

@@ -6,10 +6,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
 /**
@@ -68,7 +66,7 @@ public class EndScreen implements Screen {
     private Table buildBackgroundLayer () {
         Table layer = new Table();
         layer.top();
-        // + Background
+        // + Background image
         imgBackground = new Image(new Texture(Gdx.files.internal("end.png")));
         layer.add(imgBackground);
         return layer;
@@ -79,7 +77,7 @@ public class EndScreen implements Screen {
 
         // build all layers
         Table layerBackground = buildBackgroundLayer();
-        Table option = buildOptWinButtons();
+        Table option = buildWinLabel();
         // assemble stage for menu screen
         stage.clear();
         Stack stack = new Stack();
@@ -89,28 +87,15 @@ public class EndScreen implements Screen {
         stack.add(layerBackground);
 
     }
-    private Table buildOptWinButtons () {
+
+    private Table buildWinLabel() {
         Table tbl = new Table();
-        // + Separator
+        // + label to reveal you win or lose according to winOrLose in Utils
         Label label = new Label("You " + Utils.winOrLose + "!", skinLibgdx);
         label.setSize(200, 40);
         label.setPosition(412,100);
         tbl.addActor(label);
-        // + Cancel Button with event handler
 
-//        TextButton restartButton = new TextButton("Restart", skinLibgdx);
-//        tbl.addActor(restartButton);
-//        restartButton.setSize(300,50);
-//        restartButton.setPosition(362, 20);
-//        restartButton.setColor(0,0,0,1);
-//        restartButton.addListener(new ChangeListener() {
-//            @Override
-//            public void changed (ChangeEvent event, Actor actor) {
-//
-//                game.setScreen(new MenuScreen(game));
-//
-//            }
-//        });
         return tbl;
     }
 }
