@@ -86,11 +86,12 @@ public class NetworkHost implements Runnable {
                     - sentMessages[minDelayIndex].sentTime
                     - localMessageReceiveTimes[minDelayIndex]
                     + receivedMessages[minDelayIndex].sentTime;
+            // no float is required since the ms is the shortest time period we can handle.
             long timeOffsetToClient = ((oi - d/2) + (oi + d/2)) / 2;
             // here we tell the client the result
             out.println(timeOffsetToClient);
             out.flush();
-//            System.out.println(timeOffsetToClient);
+            // Tell the system that we finished time offset calculation and is ready to start the game.
             Utils.bus.post(Utils.CONNECTED_NOTIFICATION);
             MessageHandler handler = new MessageHandler(timeOffsetToClient);
             while (!Thread.interrupted()) {
@@ -101,6 +102,11 @@ public class NetworkHost implements Runnable {
         }
     }
 
+    /**
+     * Asynchronous send
+     *
+     * @param message message to be sent
+     */
     public void send(final Message message) {
         executorService.execute(new Runnable() {
             @Override

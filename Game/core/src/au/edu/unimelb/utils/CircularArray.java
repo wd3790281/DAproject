@@ -1,6 +1,12 @@
 package au.edu.unimelb.utils;
 
 /**
+ * Inspired by circular buffer.
+ *
+ * CircularArray ensures that only n=capacity elements can exist in the array.
+ * When the array is full and someone try to add new value, then the oldest
+ * value will be dropped, the new value will be added.
+ *
  * Created by HeguangMiao on 3/05/2016.
  */
 public class CircularArray<T> {
