@@ -26,7 +26,7 @@ public class Bullet {
 
         switch (this.direction){
             case 1:
-                this.bullet.x = x + 5;
+                this.bullet.x = x - 5;
                 this.bullet.y = y + 15;
                 break;
             case 2:
@@ -38,7 +38,7 @@ public class Bullet {
                 this.bullet.x = x + 12;
                 break;
             case 4:
-                this.bullet.y = y + 5;
+                this.bullet.y = y - 5;
                 this.bullet.x = x + 12;
                 break;
             case 5:
