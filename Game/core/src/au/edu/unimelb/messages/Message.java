@@ -8,7 +8,8 @@ import com.google.gson.Gson;
 public class Message {
     public enum MessageType {
         TimeOffsetDetect,
-        GameStateExchange
+        GameStateExchange,
+        GameOver
     }
 
     public MessageType messageType;

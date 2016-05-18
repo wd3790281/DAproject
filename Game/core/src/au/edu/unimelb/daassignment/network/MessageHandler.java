@@ -1,6 +1,8 @@
 package au.edu.unimelb.daassignment.network;
 
 import au.edu.unimelb.algorithms.BucketManager;
+import au.edu.unimelb.dingw.game.Utils;
+import au.edu.unimelb.messages.GameOverMessage;
 import au.edu.unimelb.messages.GameStateExchangeMessage;
 import au.edu.unimelb.messages.Message;
 import com.badlogic.gdx.Game;
@@ -30,6 +32,11 @@ public class MessageHandler {
     public void handleGameStateExchangeMessage(GameStateExchangeMessage msg) {
         msg.timeStamp -= timeOffset;
         BucketManager.defaultManager.receiveMessage(msg, 1); // received message source must be 1. local source is 0.
+    }
+
+    public void handleGameOverMessage(GameOverMessage msg) {
+        msg.timeStamp -= timeOffset;
+        Utils.bus.post(msg);
     }
 
 }

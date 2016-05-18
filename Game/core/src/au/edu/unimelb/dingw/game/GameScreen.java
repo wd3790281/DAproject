@@ -1,6 +1,7 @@
 package au.edu.unimelb.dingw.game;
 
 import au.edu.unimelb.algorithms.BucketManager;
+import au.edu.unimelb.messages.GameOverMessage;
 import au.edu.unimelb.messages.GameStateExchangeMessage;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -197,11 +198,13 @@ public class GameScreen implements Screen {
                 bullets.removeIndex(i);
                 Utils.winOrLose = "lose";
                 game.setScreen(new EndScreen(game));
+                sendGameOverMessage(true);
 
             } else if (bullet.getBullet().overlaps(enemyTank.getTank())) {
                 bullets.removeIndex(i);
                 Utils.winOrLose = "win";
                 game.setScreen(new EndScreen(game));
+                sendGameOverMessage(false);
             }
             for (int j = 0; j < walls.size; j++) {
                 Rectangle wall = walls.get(j);
@@ -356,6 +359,26 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    private void sendGameOverMessage(boolean win){
+        GameOverMessage msg = new GameOverMessage();
+        msg.win = win;
+    }
+
+    @Subscribe
+    public void endGame(final GameOverMessage msg){
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                if (msg.win == true) {
+                    Utils.winOrLose = "win";
+                } else {
+                    Utils.winOrLose = "lose";
+                }
+                game.setScreen(new EndScreen(game));
+            }
+        });
     }
 
 }
